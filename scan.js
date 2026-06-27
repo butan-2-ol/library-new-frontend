@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function processVisit(qrData) {
         visitorDetailsDiv.innerHTML = "<h3>Processing</h3><p>Verifying visit logs, please hold...</p>";
 
-        fetch("http://localhost:5002/api/visits", {
+        fetch("https://library-2-backend.onrender.com/api/visits", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

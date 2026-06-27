@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            apiEndpoint = "http://localhost:5002/api/students";
+            apiEndpoint = "https://library-2-backend.onrender.com/api/students";
             payload = {
                 student_name: nameVal,
                 student_phone: phoneVal,
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            apiEndpoint = "http://localhost:5002/api/staff";
+            apiEndpoint = "https://library-2-backend.onrender.com/api/staff";
             payload = {
                 staff_name: nameVal,
                 staff_phone: phoneVal,
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function() {
         } 
         else if (visitorType === "guest") {
             // Already validated name and phone fields above!
-            apiEndpoint = "http://localhost:5002/api/guests";
+            apiEndpoint = "https://library-2-backend.onrender.com/api/guests";
             payload = {
                 guest_name: nameVal,
                 guest_phone: phoneVal

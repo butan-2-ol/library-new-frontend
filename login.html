@@ -121,8 +121,8 @@
                     return;
                 }
 
-                // 2. Send the PIN to POST http://localhost:5002/api/login
-                fetch("http://localhost:5002/api/login", { // <-- FIXED: Removed /auth from the path
+                // 2. Send the PIN to POST https://library-2-backend.onrender.com/api/login
+                fetch("https://library-2-backend.onrender.com/api/login", { 
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

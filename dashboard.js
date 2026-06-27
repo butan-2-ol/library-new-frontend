@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Establish real-time connection with backend server
-    const socket = io("http://localhost:5002");
+    const socket = io("https://library-2-backend.onrender.com");
 
     // Handle real-time notification of a new visit log
     socket.on("new-visit", function(visitData) {
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 </tr>
             `;
 
-            const endpoint = `http://localhost:5002/api/${type}/search?q=${encodeURIComponent(query)}`;
+            const endpoint = `https://library-2-backend.onrender.com/api/${type}/search?q=${encodeURIComponent(query)}`;
 
             // Execute authenticated GET request to query database entries
             fetch(endpoint, {
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (!proceed) return;
 
                         // Post visit entry payload with JWT authorization context header
-                        fetch('http://localhost:5002/api/visits', {
+                        fetch('https://library-2-backend.onrender.com/api/visits', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function fetchSummaryMetrics() {
         const selectedFilter = metricsFilterSelect ? metricsFilterSelect.value : 'today';
 
-        fetch(`http://localhost:5002/api/visits/summary?filter=${selectedFilter}`, {
+        fetch(`https://library-2-backend.onrender.com/api/visits/summary?filter=${selectedFilter}`, {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
