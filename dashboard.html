@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Dashboard</title>
+</head>
+<style>
+    /* ==========================================================================
+   1. Core Reset & Global Styles
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f6f9;
+    color: #333333;
+    line-height: 1.6;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ==========================================================================
+   2. Layout Structure
+   ========================================================================== */
+body > h2,
+#metrics-section,
+#feed-section {
+    width: 100%;
+    max-width: 900px; /* Wider view container optimized for desktop analytics grid */
+}
+
+body > h2 {
+    color: #1a1a1a;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 24px;
+    align-self: flex-start;
+}
+
+hr {
+    display: none; /* Hidden because metric cards and tables provide natural separation */
+}
+
+/* ==========================================================================
+   3. Analytics Summary Grid (Metric Cards)
+   ========================================================================== */
+#metrics-section h3,
+#feed-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+}
+
+#metrics-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 32px;
+}
+
+/* Flatten the container p tags into a flex row matrix */
+#metrics-section p {
+    display: flex;
+    flex-direction: column-reverse; /* Puts count numbers above the category text labels */
+    background: #ffffff;
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    margin-bottom: 12px;
+    border-left: 4px solid #cbd5e1;
+}
+
+/* Dynamic CSS grid wrapper conversion when window space is wide enough */
+@media (min-width: 600px) {
+    #metrics-section {
+        flex-direction: row;
+        gap: 16px;
+    }
+    #metrics-section p {
+        flex: 1;
+        margin-bottom: 0;
+    }
+}
+
+/* Individual accent colors per visitor category */
+#metrics-section p:has(#count-student) { border-left-color: #3b82f6; } /* Blue */
+#metrics-section p:has(#count-staff) { border-left-color: #10b981; }   /* Green */
+#metrics-section p:has(#count-guest) { border-left-color: #f59e0b; }   /* Amber */
+
+/* Numerical Counters */
+#metrics-section span[id^="count-"] {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+/* Category Labels */
+#metrics-section strong {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+/* ==========================================================================
+   4. Real-time Activity Table Layout
+   ========================================================================== */
+#feed-section {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+#visitor-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none !important; /* Neutralize the inline border="1" */
+    text-align: left;
+    font-size: 15px;
+}
+
+#visitor-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 2px solid #edf2f7;
+}
+
+#visitor-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+/* Dynamic row entrance animation for live incoming sockets */
+#visitor-table tbody tr {
+    animation: fadeInRow 0.4s ease-out;
+}
+
+#visitor-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+@keyframes fadeInRow {
+    from { opacity: 0; transform: translateY(-8px); background-color: #eff6ff; }
+    to { opacity: 1; transform: translateY(0); background-color: transparent; }
+}
+
+/* ==========================================================================
+   5. Reusable Badges (For categories appended via dashboard.js)
+   ========================================================================== */
+[class^="badge-"] {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 12px;
+    letter-spacing: 0.3px;
+}
+
+/* ==========================================================================
+   7. Search Section Styles
+   ========================================================================== */
+#search-section {
+    width: 100%;
+    max-width: 900px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    margin-bottom: 32px;
+}
+
+/* Flex container layout for the search bar row */
+#search-section p:first-of-type {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+/* Search input field text properties */
+#search-input {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 15px;
+    color: #2d3748;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Action fetch button execution state */
+#search-button {
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #1e293b; /* Dark charcoal slate button for interactive visual balance */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+#search-button:hover {
+    background-color: #0f172a;
+}
+
+#search-button:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================================================
+   8. Search Results Data Grid
+   ========================================================================== */
+#search-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none !important; /* Overrides inline border="1" properties */
+    text-align: left;
+    font-size: 15px;
+}
+
+#search-results-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 2px solid #edf2f7;
+}
+
+#search-results-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+#search-results-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Clear structural baseline layout for the inner search header grouping */
+#search-section h3 {
+    margin-bottom: 16px;
+}
+
+/* Polishing the search-type category dropdown box */
+#search-type {
+    max-width: 280px;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #1e293b;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    margin-bottom: 16px; /* Spaces it gracefully right above the input bar row */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    
+    /* Apply custom sleek clean vector layout drop-marker engine icon */
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+/* Selector Interactive States */
+#search-type:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Ensures the p wrapper holding the query bar clears inline floating artifacts smoothly */
+#search-section p {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+/* ==========================================================================
+   11. Log Visit Action Button
+   ========================================================================== */
+.log-visit-btn {
+    background-color: #2563eb; /* Clean blue interactive primary color */
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover effect */
+.log-visit-btn:hover {
+    background-color: #1d4ed8; /* Deepens seamlessly on hover */
+}
+
+/* Click state physics response */
+.log-visit-btn:active {
+    transform: scale(0.96);
+}
+
+/* Focus indicator for keyboard accessibility */
+.log-visit-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Optional alignment balancing for table columns holding actions */
+#search-results-table td:last-child {
+    text-align: right; /* Keeps buttons cleanly aligned to the right edge of rows */
+    padding-right: 20px;
+}
+
+.logout-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 70vh;
+    margin: 1rem;
+}
+
+.logout-section button {
+    background-color: #2563eb; /* Clean blue interactive primary color */
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Hover effect */
+.logout-section button:hover {
+    background-color: #1d4ed8; /* Deepens seamlessly on hover */
+}
+
+.badge-STAFF, .badge-staff { background-color: #d1fae5; color: #065f46; }
+
+
+
+.badge-STUDENT, .badge-student { background-color: #dbeafe; color: #1e40af; }
+.badge-STAFF, .badge-staff { background-color: #d1fae5; color: #065f46; }
+.badge-GUEST, .badge-guest { background-color: #fef3c7; color: #92400e; }
+</style>
+<body>
+
+    <h2 style="text-align: center;">Visitor Analytics Dashboard</h2>
+    <div class="logout-section">
+        <h3>Visit Summary Counts</h3>
+        <button type="button" id="logout-btn">Log Out</button>
+
+    </div>
+    
+    
+    <div id="metrics-section">
+        
+        
+        <p>
+            <label for="metrics-filter"><strong>Time Period:</strong></label>
+            <select id="metrics-filter" style="padding: 6px 12px; font-size: 14px; border-radius: 4px; border: 1px solid #cbd5e1; margin-left: 8px; cursor: pointer;">
+                <option value="today">Today</option>
+                <option value="this_week">This Week</option>
+                <option value="this_month">This Month</option>
+                <option value="this_year">This Year</option>
+                <option value="all_time">All Time</option>
+            </select>
+        </p>
+
+        <p>
+            <strong>Students:</strong> <span id="count-student">0</span>
+        </p>
+        <p>
+            <strong>Staff:</strong> <span id="count-staff">0</span>
+        </p>
+        <p>
+            <strong>Guests:</strong> <span id="count-guest">0</span>
+        </p>
+    </div>
+
+    <hr>
+
+    <div id="search-section">
+        <h3>Search Visitor Records</h3>
+
+        <select id="search-type">
+            <option value="">-- Select Category Type --</option>
+            <option value="students">Student</option>
+            <option value="staff">Staff</option>
+            <option value="guests">Guest</option>
+        </select>
+        <p>
+            <input type="text" id="search-input" placeholder="Enter name or identifier...">
+            <button type="button" id="search-button">Fetch Records</button>
+        </p>
+        
+        <table border="1" id="search-results-table">
+            <thead>
+                <tr>
+                    <th>Registration ID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Visitor Type</th>
+                    <th>User Id</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="search-results-body">
+                
+            </tbody>
+        </table>
+    </div>
+
+    <hr>
+
+    <div id="feed-section">
+        <h3>Real-Time Incoming Visitors</h3>
+        <table border="1" id="visitor-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Identifier / Details</th>
+                </tr>
+            </thead>
+            <tbody id="visitor-feed-body">
+                <tr id="no-data-row">
+                    <td colspan="4" style="text-align: center; color: #888;">Waiting for live checkout entries...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="http://localhost:5002/socket.io/socket.io.js"></script>
+    <script src="dashboard.js"></script>
+
+</body>
+</html>
