@@ -137,9 +137,11 @@ document.addEventListener("DOMContentLoaded", function() {
             },
             body: JSON.stringify(payload)
         })
-        .then(response => {
+       .then(response => {
             if (!response.ok) {
-                throw new Error("Network response was not ok");
+                return response.json().then(errData => {
+                    throw new Error(errData.message || "Network response was not ok");
+                });
             }
             return response.json(); 
         })
@@ -176,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(error => {
             console.error("Registration Error:", error);
-            alert("An error occurred during registration. Please try again.");
+            alert(error.message || "An error occurred during registration. Please try again.");
         });
     });
 });
