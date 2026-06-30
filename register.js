@@ -44,9 +44,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // 4. Run every time the visitor type dropdown changes
     visitorTypeSelect.addEventListener("change", updateFormVisibility);
 
-    // ==========================================================================
+    
     // 5. Form Submission & Validation Logic
-    // ==========================================================================
+  
     const registrationForm = document.querySelector("form");
     const qrSection = document.getElementById("qr-section");
 
