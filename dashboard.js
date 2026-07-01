@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const searchInput = document.getElementById("search-input");
     const searchButton = document.getElementById("search-button");
     const searchResultsBody = document.getElementById("search-results-body");
+    
+    // DOM reference for Export CSV button
+    const exportBtn = document.getElementById('export-btn');
 
     // Fetch metric counts on initial dashboard load
     fetchSummaryMetrics();
@@ -248,5 +251,130 @@ document.addEventListener("DOMContentLoaded", function() {
         } else if (type === "guest" && countGuestSpan) {
             countGuestSpan.textContent = parseInt(countGuestSpan.textContent || "0") + 1;
         }
+    }
+
+    // --- FRONTEND MULTI-API EXPORT LOGIC ---
+    if (exportBtn) {
+        exportBtn.addEventListener('click', async () => {
+            // Visual feedback: disable button while fetching
+            exportBtn.disabled = true;
+            exportBtn.innerText = "Exporting...";
+
+            // 3. Summary filter matching the current dashboard selection dropdown
+            const selectedFilter = metricsFilterSelect ? metricsFilterSelect.value : 'today';
+
+            try {
+                // 1. Correct Token Key Setup
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                };
+
+                // 2. Fix all four fetch calls to use full Render API URLs
+                const [studentsRes, staffRes, guestsRes, summaryRes] = await Promise.all([
+                    fetch('https://library-2-backend.onrender.com/api/students', { headers }),
+                    fetch('https://library-2-backend.onrender.com/api/staff', { headers }),
+                    fetch('https://library-2-backend.onrender.com/api/guests', { headers }),
+                    fetch(`https://library-2-backend.onrender.com/api/visits/summary?filter=${selectedFilter}`, { headers })
+                ]);
+
+                if (!studentsRes.ok || !staffRes.ok || !guestsRes.ok || !summaryRes.ok) {
+                    throw new Error("One or more backend endpoints failed to respond.");
+                }
+
+                // 4. Response data extraction corrected (.data parsing with fallback)
+                const studentsData = await studentsRes.json();
+                const staffData = await staffRes.json();
+                const guestsData = await guestsRes.json();
+                const summaryData = await summaryRes.json();
+
+                const students = studentsData.data || [];
+                const staff = staffData.data || [];
+                const guests = guestsData.data || [];
+                const summary = summaryData.data || [];
+
+                let csvContent = "";
+
+                // Helper utility to safely escape characters for valid CSV format
+                const escapeCSV = (val) => {
+                    if (val === null || val === undefined) return "";
+                    let stringVal = String(val);
+                    if (stringVal.includes(',') || stringVal.includes('"') || stringVal.includes('\n')) {
+                        return `"${stringVal.replace(/"/g, '""')}"`;
+                    }
+                    return stringVal;
+                };
+
+                // 5. Summary CSV mapping fixed to iterate through array of objects properly
+                csvContent += `=== VISIT SUMMARY COUNTS (Filter: ${selectedFilter.toUpperCase()}) ===\n`;
+                csvContent += "Visitor Type,Total Visits\n";
+                if (Array.isArray(summary)) {
+                    summary.forEach(item => {
+                        csvContent += `${escapeCSV(item.visitor_type)},${escapeCSV(item.total_visits)}\n`;
+                    });
+                }
+                csvContent += "\n\n";
+
+                // --- SECTION: STUDENTS REGISTRANTS ---
+                csvContent += "=== STUDENT REGISTRANTS ===\n";
+                if (Array.isArray(students) && students.length > 0) {
+                    const headersList = Object.keys(students[0]);
+                    csvContent += headersList.map(escapeCSV).join(",") + "\n";
+                    students.forEach(row => {
+                        csvContent += headersList.map(h => escapeCSV(row[h])).join(",") + "\n";
+                    });
+                } else {
+                    csvContent += "No student data records found.\n";
+                }
+                csvContent += "\n\n";
+
+                // --- SECTION: STAFF REGISTRANTS ---
+                csvContent += "=== STAFF REGISTRANTS ===\n";
+                if (Array.isArray(staff) && staff.length > 0) {
+                    const headersList = Object.keys(staff[0]);
+                    csvContent += headersList.map(escapeCSV).join(",") + "\n";
+                    staff.forEach(row => {
+                        csvContent += headersList.map(h => escapeCSV(row[h])).join(",") + "\n";
+                    });
+                } else {
+                    csvContent += "No staff data records found.\n";
+                }
+                csvContent += "\n\n";
+
+                // --- SECTION: GUEST REGISTRANTS ---
+                csvContent += "=== GUEST REGISTRANTS ===\n";
+                if (Array.isArray(guests) && guests.length > 0) {
+                    const headersList = Object.keys(guests[0]);
+                    csvContent += headersList.map(escapeCSV).join(",") + "\n";
+                    guests.forEach(row => {
+                        csvContent += headersList.map(h => escapeCSV(row[h])).join(",") + "\n";
+                    });
+                } else {
+                    csvContent += "No guest data records found.\n";
+                }
+
+                // Compile into blob payload and trigger the window download action
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                
+                const dateStamp = new Date().toISOString().slice(0, 10);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `library_dashboard_export_${dateStamp}.csv`);
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch (error) {
+                console.error("Export System Error:", error);
+                alert(`Failed to export dashboard data: ${error.message}`);
+            } finally {
+                // Restore button state
+                exportBtn.disabled = false;
+                exportBtn.innerText = "Export CSV";
+            }
+        });
     }
 });

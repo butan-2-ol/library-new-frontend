@@ -365,6 +365,13 @@ hr {
     transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
+@media(max-width: 720px){
+    
+.header-buttons, .logout-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+}
 
 
 /* Hover effect */
@@ -383,10 +390,12 @@ hr {
 <body>
 
     <h2 style="text-align: center;">Visitor Analytics Dashboard</h2>
-    <div class="logout-section">
+    <div class="logout-section metrics-section">
         <h3>Visit Summary Counts</h3>
-        <button type="button" id="logout-btn">Log Out</button>
-
+        <div  class="header-buttons">
+            <button type="button" id="logout-btn">Log Out</button>
+            <button class="button" id="export-btn">Export CSV</button>
+        </div>
     </div>
     
     
