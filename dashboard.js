@@ -260,17 +260,17 @@ document.addEventListener("DOMContentLoaded", function() {
             exportBtn.disabled = true;
             exportBtn.innerText = "Exporting...";
 
-            // 3. Summary filter matching the current dashboard selection dropdown
+            // Match current dashboard selection dropdown filter
             const selectedFilter = metricsFilterSelect ? metricsFilterSelect.value : 'today';
 
             try {
-                // 1. Correct Token Key Setup
+                // Headers using your exact 'authToken' key
                 const headers = {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
                 };
 
-                // 2. Fix all four fetch calls to use full Render API URLs
+                // Fetch student lists, staff lists, guest lists, and summary metrics in parallel
                 const [studentsRes, staffRes, guestsRes, summaryRes] = await Promise.all([
                     fetch('https://library-2-backend.onrender.com/api/students', { headers }),
                     fetch('https://library-2-backend.onrender.com/api/staff', { headers }),
@@ -282,20 +282,21 @@ document.addEventListener("DOMContentLoaded", function() {
                     throw new Error("One or more backend endpoints failed to respond.");
                 }
 
-                // 4. Response data extraction corrected (.data parsing with fallback)
+                // Parse responses to JSON
                 const studentsData = await studentsRes.json();
                 const staffData = await staffRes.json();
                 const guestsData = await guestsRes.json();
                 const summaryData = await summaryRes.json();
 
-                const students = studentsData.data || [];
-                const staff = staffData.data || [];
-                const guests = guestsData.data || [];
-                const summary = summaryData.data || [];
+                // Extracted using your exact database model endpoints structural keys
+                const students = studentsData.students || [];
+                const staff = staffData.allStaff || [];
+                const guests = guestsData.allGuests || [];
+                const summary = summaryData.data || summaryData;
 
                 let csvContent = "";
 
-                // Helper utility to safely escape characters for valid CSV format
+                // Helper utility to safely escape characters for a valid CSV format
                 const escapeCSV = (val) => {
                     if (val === null || val === undefined) return "";
                     let stringVal = String(val);
@@ -305,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     return stringVal;
                 };
 
-                // 5. Summary CSV mapping fixed to iterate through array of objects properly
+                // SECTION 1: Summary Counts
                 csvContent += `=== VISIT SUMMARY COUNTS (Filter: ${selectedFilter.toUpperCase()}) ===\n`;
                 csvContent += "Visitor Type,Total Visits\n";
                 if (Array.isArray(summary)) {
@@ -315,7 +316,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 csvContent += "\n\n";
 
-                // --- SECTION: STUDENTS REGISTRANTS ---
+                // SECTION 2: Students Data Table
                 csvContent += "=== STUDENT REGISTRANTS ===\n";
                 if (Array.isArray(students) && students.length > 0) {
                     const headersList = Object.keys(students[0]);
@@ -328,7 +329,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 csvContent += "\n\n";
 
-                // --- SECTION: STAFF REGISTRANTS ---
+                // SECTION 3: Staff Data Table
                 csvContent += "=== STAFF REGISTRANTS ===\n";
                 if (Array.isArray(staff) && staff.length > 0) {
                     const headersList = Object.keys(staff[0]);
@@ -341,7 +342,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 csvContent += "\n\n";
 
-                // --- SECTION: GUEST REGISTRANTS ---
+                // SECTION 4: Guests Data Table
                 csvContent += "=== GUEST REGISTRANTS ===\n";
                 if (Array.isArray(guests) && guests.length > 0) {
                     const headersList = Object.keys(guests[0]);
@@ -371,7 +372,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.error("Export System Error:", error);
                 alert(`Failed to export dashboard data: ${error.message}`);
             } finally {
-                // Restore button state
+                // Restore button text and enable state
                 exportBtn.disabled = false;
                 exportBtn.innerText = "Export CSV";
             }
