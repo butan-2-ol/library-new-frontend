@@ -365,18 +365,73 @@ hr {
     transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
-@media(max-width: 720px){
-    
-.header-buttons, .logout-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-}
-
 
 /* Hover effect */
 .logout-section button:hover {
     background-color: #1d4ed8; /* Deepens seamlessly on hover */
+}
+
+/* --- Base Styles (Desktop & Tablet) --- */
+.metrics-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px 20px;
+    background-color: #f8fafc; /* Adjust background matching your theme */
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.metrics-section h3 {
+    margin: 0;
+}
+
+.header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+}
+
+/* Ensure button click interactions scale beautifully */
+.header-buttons button, 
+.header-buttons .button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+
+/* --- Responsiveness Rules (Mobile Layout Breakdown) --- */
+@media screen and (max-width: 640px) {
+    /* Stack header section elements vertically */
+    .logout-section.metrics-section {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px 15px;
+        gap: 15px;
+    }
+
+    /* Force button row container to take full horizontal block spacing */
+    .header-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    /* Make action buttons easy to press on mobile touchscreen displays */
+    .header-buttons button, 
+    .header-buttons .button {
+        width: 100%;
+        padding: 12px; /* Increased padding for better mobile touch-target sizing */
+        font-size: 16px; /* Prevents iOS mobile safari auto-zooming quirks */
+        text-align: center;
+    }
 }
 
 .badge-STAFF, .badge-staff { background-color: #d1fae5; color: #065f46; }

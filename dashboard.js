@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const selectedFilter = metricsFilterSelect ? metricsFilterSelect.value : 'today';
 
             try {
-                // Headers using your exact 'authToken' key
+                // Headers using exact 'authToken' key
                 const headers = {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const guestsData = await guestsRes.json();
                 const summaryData = await summaryRes.json();
 
-                // Extracted using your exact database model endpoints structural keys
+                // Extracted using  exact database model endpoints structural keys
                 const students = studentsData.students || [];
                 const staff = staffData.allStaff || [];
                 const guests = guestsData.allGuests || [];
@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 };
 
                 // SECTION 1: Summary Counts
-                csvContent += `=== VISIT SUMMARY COUNTS (Filter: ${selectedFilter.toUpperCase()}) ===\n`;
+                csvContent += ` VISIT SUMMARY COUNTS (Filter: ${selectedFilter.toUpperCase()}) \n`;
                 csvContent += "Visitor Type,Total Visits\n";
                 if (Array.isArray(summary)) {
                     summary.forEach(item => {
@@ -317,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 csvContent += "\n\n";
 
                 // SECTION 2: Students Data Table
-                csvContent += "=== STUDENT REGISTRANTS ===\n";
+                csvContent += "STUDENT REGISTRANTS\n";
                 if (Array.isArray(students) && students.length > 0) {
                     const headersList = Object.keys(students[0]);
                     csvContent += headersList.map(escapeCSV).join(",") + "\n";
@@ -330,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 csvContent += "\n\n";
 
                 // SECTION 3: Staff Data Table
-                csvContent += "=== STAFF REGISTRANTS ===\n";
+                csvContent += "STAFF REGISTRANTS\n";
                 if (Array.isArray(staff) && staff.length > 0) {
                     const headersList = Object.keys(staff[0]);
                     csvContent += headersList.map(escapeCSV).join(",") + "\n";
