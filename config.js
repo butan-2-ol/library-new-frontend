@@ -8,7 +8,7 @@ const CONFIG = {
         ? "https://library-new-backend.onrender.com"
         : "http://localhost:5002",
     MODEL_URL: isProduction 
-        ? "https://butan-2-ol.github.io/libpass-models" 
+        ? "/models" 
         : "/library_2_frontend_face/models"
 };
 
