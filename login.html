@@ -121,7 +121,8 @@
                 }
 
                 // UPDATED TO LOCALHOST
-                fetch("http://localhost:5002/api/login", { 
+                fetch(`${window.CONFIG.API_URL}/login`,{
+           
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
