@@ -29,7 +29,6 @@ body {
 /* ==========================================================================
    2. Main Layout Container
    ========================================================================== */
-/* Wraps around the content to create a cohesive dashboard/card feel */
 body > h2,
 body > p,
 form,
@@ -40,7 +39,6 @@ form,
     padding: 0 30px;
 }
 
-/* Base structural alignment for all text blocks and wrapper sections */
 body > h2 {
     padding-top: 35px;
     border-top-left-radius: 8px;
@@ -61,7 +59,6 @@ form {
     padding-bottom: 20px;
 }
 
-/* Decorative modern separators instead of the default harsh lines */
 hr {
     border: none;
     border-top: 1px solid #e2e8f0;
@@ -74,7 +71,6 @@ hr {
 /* ==========================================================================
    3. Form Elements & Typography
    ========================================================================== */
-/* Cleans up default paragraph spacing around form groupings */
 p {
     margin-bottom: 20px;
 }
@@ -87,7 +83,6 @@ label {
     margin-bottom: 8px;
 }
 
-/* Unified style for inputs and select dropdowns */
 input[type="text"],
 input[type="tel"],
 input[type="email"],
@@ -103,7 +98,6 @@ select {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Interactive States */
 input:focus,
 select:focus {
     border-color: #3b82f6;
@@ -134,7 +128,7 @@ button[type="submit"] {
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.15s ease, transform 0.1s ease;
-    margin-top: 10px;
+    margin-top: 25px;
 }
 
 button[type="submit"]:hover {
@@ -145,12 +139,41 @@ button[type="submit"]:active {
     transform: scale(0.98);
 }
 
+/* Camera Action Utilities */
+#face-capture-section button {
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    background-color: #f8fafc;
+    color: #334155;
+    transition: all 0.15s ease;
+    margin-right: 8px;
+    margin-top: 8px;
+}
+
+#face-capture-section button:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+#face-capture-section button#capture-face-btn {
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+}
+
+#face-capture-section button#capture-face-btn:hover {
+    background-color: #047857;
+}
+
 /* ==========================================================================
    5. Dynamic Field Structure (JavaScript Controlled)
    ========================================================================== */
-/* Zero out internal layout margins for the wrapper divs so hiding them looks smooth */
 div[id^="field-"] {
-    display: block; /* Modified dynamically to 'none' via register.js */
+    display: block;
 }
 
 div[id^="field-"] p {
@@ -189,8 +212,73 @@ div[id^="field-"] p {
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+
+.kiosk-header {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.kiosk-header a {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: #f1f3f5;
+    color: #495057;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+}
+
+.kiosk-header a:hover {
+    background-color: #e9ecef;
+    color: #212529;
+    transform: translateX(-2px);
+}
+
+#face-capture-section {
+    margin-top: 25px;
+    padding: 20px;
+    background-color: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    text-align: center;
+}
+
+#face-capture-section h3 {
+    font-size: 15px;
+    color: #475569;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+#face-video {
+    background-color: #000000;
+    border-radius: 6px;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+#face-status {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 10px;
+}
+
+
 </style>
 <body>
+
+        <!-- back button -->
+        <div class="kiosk-header">
+            <a href="scan.html">← Back to Scanner</a>
+        </div>
 
     <h2>Registration Form</h2>
 
@@ -207,7 +295,7 @@ div[id^="field-"] p {
     <hr>
 
     <form action="#" method="POST">
-        
+             
         <div id="field-user-id">
             <p>
                 <label for="user-id">ID:</label>
@@ -224,6 +312,20 @@ div[id^="field-"] p {
             <p>
                 <label for="user-dept">Department:</label>
                 <input type="text" id="user-dept" name="user_dept">
+            </p>
+        </div>
+
+        <!-- NEW FIELD: Level select dropdown option wrapper -->
+        <div id="field-user-level">
+            <p>
+                <label for="user-level">Level:</label>
+                <select id="user-level" name="user_level">
+                    <option value="">-- Select Level --</option>
+                    <option value="100">Level 100</option>
+                    <option value="200">Level 200</option>
+                    <option value="300">Level 300</option>
+                    <option value="400">Level 400</option>
+                </select>
             </p>
         </div>
 
@@ -261,8 +363,31 @@ div[id^="field-"] p {
             </p>
         </div>
 
+        <!-- Moved: Face Capture Section now sits sequentially before submission actions -->
+        <div id="face-capture-section">
+            <h3>Biometric Enrollment</h3>
+            <video id="face-video" width="300" height="200" autoplay muted></video>
+            <canvas id="face-canvas" width="300" height="200" style="display:none;"></canvas>
+            
+            <button type="button" id="start-camera-btn">Start Camera</button>
+            <button type="button" id="capture-face-btn" style="display:none;">Capture Face</button>
+            <p id="face-status">No face captured yet.</p>
+        </div>
+
+        <div id="consent-notice">
+            <p>
+                <input type="checkbox" id="consent-checkbox" required>
+                <label for="consent-checkbox">
+                    By registering, I consent to the collection and processing of my personal 
+                    and biometric data for the purpose of library access management, in accordance 
+                    with Ghana's Data Protection Act, 2012 (Act 843).
+                </label>
+            </p>
+        </div>
+
+        <!-- The submission button comes last -->
         <p>
-            <button type="submit">Register</button>
+            <button type="submit">Register Account</button>
         </p>
 
     </form>
@@ -272,6 +397,9 @@ div[id^="field-"] p {
     <div id="qr-section">
         <h3>QR Code Section</h3>
     </div>
-<script src="register.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="config.js"></script>
+    <script src="register.js"></script>
 </body>
 </html>

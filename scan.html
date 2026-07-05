@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner</title>
+    <title>LibPass Scanner Portal</title>
     <style>
         /* ==========================================================================
    1. Core Reset & Global Styles
@@ -19,10 +19,12 @@ body {
     background-color: #f4f6f9;
     color: #333333;
     line-height: 1.6;
-    padding: 40px 20px;
+    padding: 20px 20px 40px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin: 0;
+    min-height: 100vh;
 }
 
 /* ==========================================================================
@@ -30,6 +32,7 @@ body {
    ========================================================================== */
 body > h2,
 #reader,
+#face-scanner-container,
 #visitor-details {
     width: 100%;
     max-width: 520px;
@@ -45,6 +48,7 @@ body > h2 {
     font-size: 24px;
     font-weight: 700;
     letter-spacing: -0.5px;
+    text-align: center;
 }
 
 /* Decorative modern separator matching the registration form */
@@ -64,7 +68,6 @@ hr {
     padding-bottom: 25px;
 }
 
-/* Overriding and polishing internal HTML5-QRCode library styling */
 #reader table {
     margin: 0 auto !important;
 }
@@ -74,7 +77,6 @@ hr {
     opacity: 0.6;
 }
 
-/* Style the library's built-in actions (e.g., request camera permission button) */
 #reader button, 
 #reader_dashboard button {
     padding: 10px 16px;
@@ -93,10 +95,44 @@ hr {
     background-color: #1d4ed8;
 }
 
-/* The scanning target box accent styling overrides */
 #reader__scan_region video {
     border-radius: 6px;
     background: #000000;
+}
+
+/* Facial Recognition Module Additions */
+#face-scanner-container {
+    padding-top: 15px;
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#face-scanner-container h4 {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 8px;
+    align-self: flex-start;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#face-video {
+    width: 100%;
+    max-width: 460px;
+    height: 240px;
+    background: #000000;
+    border-radius: 6px;
+    object-fit: cover;
+    transform: scaleX(-1); /* Flips webcam view so it acts like a mirror */
+}
+
+#face-status {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563;
 }
 
 /* ==========================================================================
@@ -119,13 +155,11 @@ hr {
     letter-spacing: 0.5px;
 }
 
-/* Initial scan instructions placeholder font */
 #visitor-details p {
     color: #4a5568;
     font-size: 15px;
 }
 
-/* Container for data appended by scan.js after API validation */
 #visitor-details div {
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -134,43 +168,138 @@ hr {
     margin-top: 10px;
 }
 
-#visitor-details div p {
-    margin-bottom: 8px;
+.kiosk-footer {
+    width: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+    text-align: center;
+    margin-top: auto;
+}
+
+.kiosk-footer p {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+.kiosk-footer a {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.15);
+}
+
+.kiosk-footer a:hover {
+    background-color: #0056b3;
+}
+
+.kiosk-footer a:active {
+    transform: scale(0.98);
+}
+
+
+/* ==========================================================================
+   Kiosk Navigation Buttons
+   ========================================================================== */
+
+.kiosk-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2563eb; /* Clean Royal Blue */
+    color: #ffffff;
     font-size: 14px;
-    color: #334155;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed #e2e8f0;
-    padding-bottom: 8px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 15px auto 0 auto;
 }
 
-#visitor-details div p:last-child {
-    margin-bottom: 0;
-    border-bottom: none;
-    padding-bottom: 0;
+/* Primary Button Hover & Interaction States */
+.kiosk-btn:hover {
+    background-color: #1d4ed8; /* Darker blue on hover */
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
-#visitor-details div p strong {
-    color: #64748b;
-    font-weight: 500;
+.kiosk-btn:active {
+    transform: scale(0.98); /* Slight pressing animation click effect */
+}
+
+.kiosk-btn:focus {
+    outline: 2px solid #93c5fd;
+    outline-offset: 2px;
+}
+
+/* Secondary Button Modifier (Used for "Back to Face Recognition") */
+.kiosk-btn.secondary-btn {
+    background-color: #64748b; /* Slate Grey */
+}
+
+.kiosk-btn.secondary-btn:hover {
+    background-color: #475569; /* Darker Slate */
+    box-shadow: 0 4px 6px -1px rgba(100, 116, 139, 0.2);
+}
+
+/* Container Center Alignment Layouts */
+#face-scanner-container, 
+#qr-scanner-container {
+    text-align: center;
+    padding-bottom: 10px;
 }
     </style>
 </head>
 <body>
 
-    <h2>QR Code Scanner</h2>
+    <h2>LibPass Entry</h2>
 
-    <div id="reader"></div>
+    <!-- PRIMARY: Face Recognition Panel Container -->
+    <div id="face-scanner-container">
+        <h4>Facial Recognition</h4>
+        <video id="face-video" autoplay muted playsinline></video>
+        <div id="face-status">Initializing face analysis...</div>
+        
+        <!-- Toggle Button to switch to QR -->
+        <button id="btn-switch-to-qr" class="kiosk-btn" style="margin-top: 15px; padding: 8px 16px; cursor: pointer;">
+            Scan QR Code Instead
+        </button>
+    </div>
+
+    <!-- SECONDARY: QR Scan Panel Container (Hidden by default) -->
+    <div id="qr-scanner-container" style="display: none;">
+        <h4>QR Code Scanner</h4>
+        <div id="reader" style="width: 350px; margin: 0 auto;"></div>
+        
+        <!-- Toggle Button to switch back to Face -->
+        <button id="btn-switch-to-face" class="kiosk-btn secondary-btn" style="margin-top: 15px; padding: 8px 16px; cursor: pointer;">
+            Use Face Recognition Instead
+        </button>
+    </div>
 
     <hr>
 
     <div id="visitor-details">
-        <h3>Visitor Details</h3>
-        <p>Scan a QR code to view registration information.</p>
+        <h3>Gate Status</h3>
+        <p>Scan your QR code or look at the camera to pass.</p>
     </div>
 
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <div class="kiosk-footer">
+        <p>Don't have an ID card? <a href="index.html">Register here</a></p>
+    </div>
 
+    <!-- CDNs and Local Script Links -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="config.js"></script>
     <script src="scan.js"></script>
 
 </body>

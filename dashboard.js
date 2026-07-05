@@ -36,8 +36,8 @@ document.addEventListener("DOMContentLoaded", function() {
         metricsFilterSelect.addEventListener("change", fetchSummaryMetrics);
     }
 
-    // Establish real-time connection with backend server
-    const socket = io("https://library-2-backend.onrender.com");
+    // Refactored to use dynamic configuration global object
+    const socket = io(window.CONFIG.SOCKET_URL);
 
     // Handle real-time notification of a new visit log
     socket.on("new-visit", function(visitData) {
@@ -92,7 +92,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 </tr>
             `;
 
-            const endpoint = `https://library-2-backend.onrender.com/api/${type}/search?q=${encodeURIComponent(query)}`;
+            // Dynamic global API configuration endpoint string mapping
+            const endpoint = `${window.CONFIG.API_URL}/${type}/search?q=${encodeURIComponent(query)}`;
 
             // Execute authenticated GET request to query database entries
             fetch(endpoint, {
@@ -103,6 +104,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             })
             .then(response => {
+                if (response.status === 401) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
                 if (!response.ok) throw new Error("Database search failed.");
                 return response.json();
             })
@@ -140,6 +146,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         badgeClass = "guest";
                     }
 
+                    // Dynamically condition button injection for students and staff options only
+                    const deactivateBtn = (type === 'students' || type === 'staff') 
+                        ? `<button class="deactivate-btn" data-id="${regId}" data-type="${type}">Deactivate</button>` 
+                        : '';
+
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td><strong>${regId}</strong></td>
@@ -147,7 +158,10 @@ document.addEventListener("DOMContentLoaded", function() {
                         <td>${phone}</td>
                         <td><span class="badge-${badgeClass}">${visitorDisplayType}</span></td>
                         <td><code>${userId}</code></td>
-                        <td><button class="log-visit-btn" data-id="${regId}">Log Visit</button></td>
+                        <td>
+                            <button class="log-visit-btn" data-id="${regId}">Log Visit</button>
+                            ${deactivateBtn}
+                        </td>
                     `;
                     
                     searchResultsBody.appendChild(tr);
@@ -163,8 +177,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const proceed = confirm(`Log check-in visit for ${visitorName}?`);
                         if (!proceed) return;
 
-                        // Post visit entry payload with JWT authorization context header
-                        fetch('https://library-2-backend.onrender.com/api/visits', {
+                        fetch(`${window.CONFIG.API_URL}/visits`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -185,6 +198,38 @@ document.addEventListener("DOMContentLoaded", function() {
                         });
                     });
                 });
+
+                // Attach click handlers to trigger profile deactivations
+                document.querySelectorAll('.deactivate-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const registrationId = this.dataset.id;
+                        const recordType = this.dataset.type;
+                        const row = this.closest('tr');
+                        const visitorName = row.cells[1].textContent;
+
+                        const proceed = confirm(`Deactivate ${visitorName}? They will no longer be able to scan in.`);
+                        if (!proceed) return;
+
+                        fetch(`${window.CONFIG.API_URL}/${recordType}/${registrationId}/deactivate`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${authToken}`
+                            }
+                        })
+                        .then(res => {
+                            if (!res.ok) throw new Error("Deactivation network response failed.");
+                            return res.json();
+                        })
+                        .then(data => {
+                            alert(`${visitorName} has been deactivated successfully`);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert('Failed to deactivate');
+                        });
+                    });
+                });
             })
             .catch(error => {
                 console.error("Search Query Error:", error);
@@ -192,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     <tr>
                         <td colspan="6" style="text-align: center; color: #ef4444; font-weight: 500;">
                             An error occurred while fetching records. Please verify server state.
-                    </td>
+                        </td>
                     </tr>
                 `;
             });
@@ -212,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function fetchSummaryMetrics() {
         const selectedFilter = metricsFilterSelect ? metricsFilterSelect.value : 'today';
 
-        fetch(`https://library-2-backend.onrender.com/api/visits/summary?filter=${selectedFilter}`, {
+        fetch(`${window.CONFIG.API_URL}/visits/summary?filter=${selectedFilter}`, {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
@@ -220,6 +265,11 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         })
         .then(response => {
+            if (response.status === 401) {
+                window.location.href = 'login.html';
+                return;
+            }
+
             if (!response.ok) throw new Error("Failed to pull summary stats.");
             return response.json();
         })
@@ -256,39 +306,33 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- FRONTEND MULTI-API EXPORT LOGIC ---
     if (exportBtn) {
         exportBtn.addEventListener('click', async () => {
-            // Visual feedback: disable button while fetching
             exportBtn.disabled = true;
             exportBtn.innerText = "Exporting...";
 
-            // Match current dashboard selection dropdown filter
             const selectedFilter = metricsFilterSelect ? metricsFilterSelect.value : 'today';
 
             try {
-                // Headers using exact 'authToken' key
                 const headers = {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
                 };
 
-                // Fetch student lists, staff lists, guest lists, and summary metrics in parallel
                 const [studentsRes, staffRes, guestsRes, summaryRes] = await Promise.all([
-                    fetch('https://library-2-backend.onrender.com/api/students', { headers }),
-                    fetch('https://library-2-backend.onrender.com/api/staff', { headers }),
-                    fetch('https://library-2-backend.onrender.com/api/guests', { headers }),
-                    fetch(`https://library-2-backend.onrender.com/api/visits/summary?filter=${selectedFilter}`, { headers })
+                    fetch(`${window.CONFIG.API_URL}/students`, { headers }),
+                    fetch(`${window.CONFIG.API_URL}/staff`, { headers }),
+                    fetch(`${window.CONFIG.API_URL}/guests`, { headers }),
+                    fetch(`${window.CONFIG.API_URL}/visits/summary?filter=${selectedFilter}`, { headers })
                 ]);
 
                 if (!studentsRes.ok || !staffRes.ok || !guestsRes.ok || !summaryRes.ok) {
                     throw new Error("One or more backend endpoints failed to respond.");
                 }
 
-                // Parse responses to JSON
                 const studentsData = await studentsRes.json();
                 const staffData = await staffRes.json();
                 const guestsData = await guestsRes.json();
                 const summaryData = await summaryRes.json();
 
-                // Extracted using  exact database model endpoints structural keys
                 const students = studentsData.students || [];
                 const staff = staffData.allStaff || [];
                 const guests = guestsData.allGuests || [];
@@ -296,7 +340,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 let csvContent = "";
 
-                // Helper utility to safely escape characters for a valid CSV format
                 const escapeCSV = (val) => {
                     if (val === null || val === undefined) return "";
                     let stringVal = String(val);
@@ -354,7 +397,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     csvContent += "No guest data records found.\n";
                 }
 
-                // Compile into blob payload and trigger the window download action
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
@@ -372,10 +414,35 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.error("Export System Error:", error);
                 alert(`Failed to export dashboard data: ${error.message}`);
             } finally {
-                // Restore button text and enable state
                 exportBtn.disabled = false;
                 exportBtn.innerText = "Export CSV";
             }
+        });
+    }
+
+    // Dynamic configuration implementation for global batch deactivation element action
+    const deactivateCompletedBtn = document.getElementById('deactivate-completed-btn');
+    if (deactivateCompletedBtn) {
+        deactivateCompletedBtn.addEventListener('click', function() {
+            const proceed = confirm('This will deactivate all Level 400 students. Are you sure?');
+            if (!proceed) return;
+
+            fetch(`${window.CONFIG.API_URL}/students/deactivate-completed`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to process batch deactivation request.");
+                return res.json();
+            })
+            .then(data => alert(data.message || 'Completed students have been batch deactivated successfully.'))
+            .catch(err => {
+                console.error(err);
+                alert('Failed to deactivate completed students');
+            });
         });
     }
 });

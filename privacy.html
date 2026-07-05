@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - LibPass</title>
+</head>
+<style>
+/* ==========================================================================
+   1. Core Reset & Global Framework
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f6f9;
+    color: #111111;
+    line-height: 1.6;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* ==========================================================================
+   2. Main Container Layout
+   ========================================================================== */
+.kiosk-header,
+.policy-card,
+.policy-actions,
+footer {
+    width: 100%;
+    max-width: 680px;
+}
+
+.kiosk-header {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.kiosk-header a {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: #ffffff;
+    color: #1e293b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.kiosk-header a:hover {
+    background-color: #e9ecef;
+    color: #000000;
+    transform: translateX(-2px);
+}
+
+/* ==========================================================================
+   3. Document Body Presentation Styles
+   ========================================================================== */
+.policy-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.policy-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #000000;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+}
+
+.policy-header h2 {
+    font-size: 19px;
+    color: #2563eb;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+.meta-info {
+    font-size: 15px;
+    color: #0f172a;
+    background-color: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 35px;
+    border: 2px solid #cbd5e1;
+}
+
+.meta-info p {
+    margin-bottom: 8px;
+}
+.meta-info p:last-child {
+    margin-bottom: 0;
+}
+
+.meta-info strong {
+    font-weight: 700;
+    color: #000000;
+}
+
+/* Accordion Section Toggles */
+.policy-section {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 18px 0;
+}
+
+.policy-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-trigger {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 17px;
+    font-weight: 700;
+    color: #000000;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    outline: none;
+    padding: 4px 0;
+}
+
+.section-trigger::after {
+    content: '+';
+    font-size: 20px;
+    color: #64748b;
+    font-weight: 700;
+    transition: transform 0.2s ease;
+}
+
+.policy-section.active .section-trigger::after {
+    content: '−';
+    color: #2563eb;
+}
+
+.section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+    color: #0f172a;
+    font-size: 15px;
+    padding-right: 10px;
+}
+
+.policy-section.active .section-content {
+    max-height: 1000px;
+    transition: max-height 0.5s ease-in-out;
+    padding-top: 14px;
+    padding-bottom: 4px;
+}
+
+.section-content ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.section-content li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.section-content li::before {
+    content: "•";
+    color: #2563eb;
+    font-weight: 900;
+    position: absolute;
+    left: 4px;
+}
+
+.section-content p {
+    margin-bottom: 12px;
+}
+
+.section-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
+   4. Action Drawer Container Styles
+   ========================================================================== */
+.policy-actions {
+    background: #f8fafc;
+    padding: 30px 40px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    margin-bottom: 30px;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #2563eb;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    text-align: center;
+}
+
+.action-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.action-btn:active {
+    transform: scale(0.99);
+}
+
+/* ==========================================================================
+   5. Footer Layout Styles
+   ========================================================================== */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    font-size: 13.5px;
+    color: #64748b;
+    border-top: 1px solid #cbd5e1;
+    margin-top: auto;
+}
+
+@media(max-width: 640px) {
+    .policy-card { padding: 24px; }
+    .policy-actions { padding: 20px 24px; }
+    body { padding: 20px 10px; }
+}
+</style>
+<body>
+
+    <!-- Top Navigation Link Header 
+    <div class="kiosk-header">
+        <a href="index.html">← Return to Registration</a>
+    </div>-->
+
+    <!-- Main document viewport -->
+    <div class="policy-card">
+        <div class="policy-header">
+            <h1>Privacy Policy</h1>
+            
+        </div>
+
+        <div class="meta-info">
+            <p><strong>Effective Date:</strong> July 5, 2026</p>
+            <p><strong>Institution Name:</strong> University Of Skills Training And Entrepreneurial Development <strong>(USTED)</strong></p>
+            <p><strong>System Name:</strong> LibPass Visitor Management System</p>
+            <p><strong>Compliance Standard:</strong> Ghana Data Protection Act, 2012 (Act 843)</p>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="policy-section active">
+            <button class="section-trigger">1. Introduction</button>
+            <div class="section-content">
+                <p>This Privacy Policy explains how <strong>USTED</strong> collects, uses, stores and protects personal and biometric data through the LibPass Library Visitor Management System, in compliance with Ghana's Data Protection Act, 2012 (Act 843).</p>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="policy-section">
+            <button class="section-trigger">2. Data We Collect</button>
+            <div class="section-content">
+                <p>We collect the following personal data during registration:</p>
+                <ul>
+                    <li>Full name</li>
+                    <li>Phone number</li>
+                    <li>Gender</li>
+                    <li>Department</li>
+                    <li>Institutional ID number (students and staff)</li>
+                    <li>Email address (students and staff)</li>
+                    <li>Academic level (students only)</li>
+                    <li>Employment status (staff only)</li>
+                    <li>Facial biometric descriptor (a mathematical representation of your face, not a photograph)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="policy-section">
+            <button class="section-trigger">3. Purpose of Collection</button>
+            <div class="section-content">
+                <p>Data is collected solely for:</p>
+                <ul>
+                    <li>Library access management and visitor identification</li>
+                    <li>Accurate counting and reporting of library visits</li>
+                    <li>Generation of a unique library registration ID and QR code</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="policy-section">
+            <button class="section-trigger">4. Biometric Data</button>
+            <div class="section-content">
+                <p>Your facial data is stored as a 128-point mathematical descriptor, not as a photograph or image. This descriptor cannot be reverse-engineered into a recognizable image of your face. It is used exclusively for identity verification at the library entrance.</p>
+            </div>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="policy-section">
+            <button class="section-trigger">5. Data Storage and Security</button>
+            <div class="section-content">
+                <p>All data is stored securely on encrypted cloud servers. Access to the system is protected by PIN-based authentication. Only authorized library staff can access visitor records.</p>
+            </div>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="policy-section">
+            <button class="section-trigger">6. Data Retention</button>
+            <div class="section-content">
+                <ul>
+                    <li>Student records are retained until graduation and deactivated thereafter</li>
+                    <li>Staff records are retained until departure from the institution</li>
+                    <li>Guest records are retained indefinitely for historical visit data</li>
+                    <li>Visit logs are retained for reporting and statistical purposes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 7 -->
+        <div class="policy-section">
+            <button class="section-trigger">7. Your Rights</button>
+            <div class="section-content">
+                <p>Under the Data Protection Act, 2012 (Act 843), you have the right to:</p>
+                <ul>
+                    <li>Access your personal data held by the institution</li>
+                    <li>Request correction of inaccurate data</li>
+                    <li>Request deletion of your data</li>
+                    <li>Withdraw consent at any time by contacting the library administration</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 8 -->
+        <div class="policy-section">
+            <button class="section-trigger">8. Contact</button>
+            <div class="section-content">
+                <p>For data-related enquiries contact:</p>
+                <p style="margin-top: 8px;">
+                    <strong>Dr. Christopher Owusu-Ansah</strong><br>
+                    [Contact Email]<br>
+                    Kumasi, Ashanti.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation submission drawer (Checkbox Removed) -->
+    <div class="policy-actions">
+        <button id="proceed-btn" class="action-btn">Back to Registration Form</button>
+    </div>
+
+    <!-- Clean Footer Elements -->
+    <footer>
+        <p>&copy; 2026 LibPass Library Visitor Management System. All rights reserved.</p>
+        
+    </footer>
+
+    <!-- Reactive Accordions & Redirect Hook -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Interactive Accordion Setup
+            const sections = document.querySelectorAll('.policy-section');
+            
+            sections.forEach(section => {
+                const trigger = section.querySelector('.section-trigger');
+                trigger.addEventListener('click', () => {
+                    const isActive = section.classList.contains('active');
+                    
+                    // Close all opened tabs for clean presentation
+                    sections.forEach(s => s.classList.remove('active'));
+                    
+                    // Toggle current choice
+                    if (!isActive) {
+                        section.classList.add('active');
+                    }
+                });
+            });
+
+            // Action Redirect Button Link handler
+            document.getElementById('proceed-btn').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

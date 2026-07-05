@@ -434,6 +434,54 @@ hr {
     }
 }
 
+
+/* Dashboard Action Buttons Styles  */
+.log-visit-btn, 
+.deactivate-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+    outline: none;
+}
+
+/* Log Visit Base & Hover (Blue) */
+.log-visit-btn {
+    background-color: #2563eb;
+    color: #ffffff;
+    margin-right: 6px;
+}
+
+.log-visit-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.log-visit-btn:active {
+    transform: scale(0.97);
+}
+
+/* Deactivate Base & Hover (Red/Destructive Outline) */
+.deactivate-btn {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.deactivate-btn:hover {
+    background-color: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.15);
+}
+
+.deactivate-btn:active {
+    transform: scale(0.97);
+    background-color: #b91c1c;
+    border-color: #b91c1c;
+}
 .badge-STAFF, .badge-staff { background-color: #d1fae5; color: #065f46; }
 
 
@@ -450,6 +498,7 @@ hr {
         <div  class="header-buttons">
             <button type="button" id="logout-btn">Log Out</button>
             <button class="button" id="export-btn">Export CSV</button>
+            <button type="button" id="deactivate-completed-btn">Deactivate Completed Students</button>
         </div>
     </div>
     
@@ -534,7 +583,9 @@ hr {
     </div>
 
     
-    <script src="https://library-2-backend.onrender.com/socket.io/socket.io.js"></script>
+   
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="config.js"></script>
     <script src="dashboard.js"></script>
 
 </body>

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+exe-first/
+*.exe
+*.dmg
+*.AppImage
+.env
+package.json
+package-lock.json

@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Grab references to the dropdown and the dynamic field wrappers
     const visitorTypeSelect = document.getElementById("visitor-type");
     
     const fieldId = document.getElementById("field-user-id");
@@ -7,24 +6,34 @@ document.addEventListener("DOMContentLoaded", function() {
     const fieldStatus = document.getElementById("field-staff-status");
     const fieldGender = document.getElementById("field-user-gender");
     const fieldEmail = document.getElementById("field-user-email");
+    const fieldLevel = document.getElementById("field-user-level");
 
-    // 2. Define the main function to handle visibility logic
+    // Variable to store the 128-digit floating-point face descriptor array (Optional)
+    let storedFaceDescriptor = null;
+
+    // Grab DOM Elements matching your HTML layout IDs
+    const startBtn = document.getElementById('start-camera-btn');
+    const captureBtn = document.getElementById('capture-face-btn');
+    const video = document.getElementById('face-video');    
+    const canvas = document.getElementById('face-canvas');  
+    const faceStatus = document.getElementById('face-status');
+
     function updateFormVisibility() {
         const selectedValue = visitorTypeSelect.value;
 
-        // Reset: Hide all optional fields by default
         fieldId.style.display = "none";
         fieldDept.style.display = "none";
         fieldStatus.style.display = "none";
         fieldGender.style.display = "none";
         fieldEmail.style.display = "none";
+        fieldLevel.style.display = "none";
 
-        // Apply conditional logic based on the selection
         if (selectedValue === "student") {
             fieldId.style.display = "block";
             fieldDept.style.display = "block";
             fieldGender.style.display = "block";
             fieldEmail.style.display = "block";
+            fieldLevel.style.display = "block";
         } 
         else if (selectedValue === "staff") {
             fieldId.style.display = "block";
@@ -33,26 +42,24 @@ document.addEventListener("DOMContentLoaded", function() {
             fieldGender.style.display = "block";
             fieldEmail.style.display = "block";
         } 
-        else if (selectedValue === "guest") {
-            // Only 'name' and 'phone' remain visible
-        }
     }
 
-    // 3. Run on page load to hide optional fields initially
     updateFormVisibility();
-
-    // 4. Run every time the visitor type dropdown changes
     visitorTypeSelect.addEventListener("change", updateFormVisibility);
-
-    
-    // 5. Form Submission & Validation Logic
   
     const registrationForm = document.querySelector("form");
     const qrSection = document.getElementById("qr-section");
 
+    // Unified Form Submission Handler
     registrationForm.addEventListener("submit", function(event) {
-        // Prevent the default page reload on form submission
         event.preventDefault();
+
+        const consentCheckbox = document.getElementById('consent-checkbox');
+            if (!consentCheckbox.checked) {
+                alert('You must consent to data collection before registering.');
+                return;
+            }
+
 
         const visitorType = visitorTypeSelect.value;
         if (!visitorType) {
@@ -60,11 +67,9 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // 5a. Extract baseline elements shared by all visitor tracks
         const nameVal = document.getElementById("user-name").value.trim();
         const phoneVal = document.getElementById("user-phone").value.trim();
 
-        // Standard validation: Every single registration needs a name and phone
         if (!nameVal || !phoneVal) {
             alert("Please fill in your Name and Phone number before submitting.");
             return;
@@ -73,27 +78,27 @@ document.addEventListener("DOMContentLoaded", function() {
         let apiEndpoint = "";
         let payload = {};
 
-        // 5b. Map endpoints and enforce conditional data checks per category
         if (visitorType === "student") {
             const idVal = document.getElementById("user-id").value.trim();
             const deptVal = document.getElementById("user-dept").value.trim();
-            const genderVal = document.getElementById("user-gender").value; // select box doesn't need trim
+            const genderVal = document.getElementById("user-gender").value; 
             const emailVal = document.getElementById("user-email").value.trim();
+            const levelVal = document.getElementById("user-level").value;
 
-            // Guard rails against empty student metrics
-            if (!idVal || !deptVal || !genderVal || !emailVal) {
+            if (!idVal || !deptVal || !genderVal || !emailVal  || !levelVal) {
                 alert("Please fill in all required Student fields.");
                 return;
             }
 
-            apiEndpoint = "https://library-2-backend.onrender.com/api/students";
+           apiEndpoint = `${window.CONFIG.API_URL}/students`;
             payload = {
                 student_name: nameVal,
                 student_phone: phoneVal,
                 student_id: idVal,
                 student_dept: deptVal,
                 student_gender: genderVal,
-                student_email: emailVal
+                student_email: emailVal,
+                level: levelVal
             };
         } 
         else if (visitorType === "staff") {
@@ -103,13 +108,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const emailVal = document.getElementById("user-email").value.trim();
             const statusVal = document.getElementById("staff-status").value;
 
-            // Guard rails against empty staff metrics
             if (!idVal || !deptVal || !genderVal || !emailVal || !statusVal) {
                 alert("Please fill in all required Staff fields.");
                 return;
             }
 
-            apiEndpoint = "https://library-2-backend.onrender.com/api/staff";
+            apiEndpoint = `${window.CONFIG.API_URL}/staff`;
             payload = {
                 staff_name: nameVal,
                 staff_phone: phoneVal,
@@ -121,15 +125,18 @@ document.addEventListener("DOMContentLoaded", function() {
             };
         } 
         else if (visitorType === "guest") {
-            // Already validated name and phone fields above!
-            apiEndpoint = "https://library-2-backend.onrender.com/api/guests";
+            apiEndpoint = `${window.CONFIG.API_URL}/guests`;
             payload = {
                 guest_name: nameVal,
                 guest_phone: phoneVal
             };
         }
 
-        // Send the structured data to the backend API via a POST request
+        // OPTIONAL FACE CAPTURE CHECK: If face data exists, append it seamlessly to the payload
+        if (storedFaceDescriptor) {
+            payload['face_data'] = storedFaceDescriptor;
+        }
+
         fetch(apiEndpoint, {
             method: "POST",
             headers: {
@@ -172,13 +179,89 @@ document.addEventListener("DOMContentLoaded", function() {
                 printWindow.print();
             });
 
-            // Optional: Resets form inputs back to blank after a successful registration checkout
+            // Clean up: turn off camera hardware streams upon submission success
+            const stream = video.srcObject;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
             registrationForm.reset();
+            consentCheckbox.checked = false;
+            storedFaceDescriptor = null; // Clear the temporary signature variable
+            if (faceStatus) {
+                faceStatus.textContent = "No face captured yet.";
+                faceStatus.style.color = "";
+            }
+            if (captureBtn) captureBtn.style.display = 'none';
+            if (startBtn) startBtn.disabled = false;
+            
             updateFormVisibility();
         })
         .catch(error => {
             console.error("Registration Error:", error);
             alert(error.message || "An error occurred during registration. Please try again.");
         });
+    });
+
+    /**
+     * CAMERA LOGIC: Handle "Start Camera" Click
+     */
+    startBtn.addEventListener('click', async () => {
+        try {
+            faceStatus.textContent = "Loading recognition models...";
+            startBtn.disabled = true;
+
+            // Updated to use absolute root path syntax to bypass directory structures
+            await faceapi.nets.tinyFaceDetector.loadFromUri(window.CONFIG.MODEL_URL);
+            await faceapi.nets.faceLandmark68Net.loadFromUri(window.CONFIG.MODEL_URL);
+            await faceapi.nets.faceRecognitionNet.loadFromUri(window.CONFIG.MODEL_URL);
+                        
+            
+            faceStatus.textContent = "Starting camera stream...";
+
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { width: 300, height: 200 } 
+            });
+            video.srcObject = stream;
+
+            captureBtn.style.display = 'inline-block';
+            faceStatus.textContent = "Camera ready. Position your face.";
+        } catch (error) {
+            console.error("Camera/Model error:", error);
+            faceStatus.textContent = "Failed to initialize camera or models.";
+            startBtn.disabled = false;
+        }
+    });
+
+    /**
+     * CAMERA LOGIC: Handle "Capture Face" Click
+     */
+    captureBtn.addEventListener('click', async () => {
+        if (!video.srcObject) {
+            faceStatus.textContent = "Camera is not running.";
+            return;
+        }
+
+        faceStatus.textContent = "Analyzing face... stand still.";
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions())
+                                        .withFaceLandmarks()
+                                        .withFaceDescriptor();
+
+        if (detection) {
+            storedFaceDescriptor = Array.from(detection.descriptor);
+            faceStatus.textContent = "Face captured successfully";
+            faceStatus.style.color = "#2b8a3e"; 
+        } else {
+            storedFaceDescriptor = null;
+            faceStatus.textContent = "No face detected, try again ";
+            faceStatus.style.color = "#c92a2a";
+        }
     });
 });
