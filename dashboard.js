@@ -236,7 +236,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 searchResultsBody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align: center; color: #ef4444; font-weight: 500;">
-                            An error occurred while fetching records. Please verify server state.
+                            No active registrations found.
                         </td>
                     </tr>
                 `;
