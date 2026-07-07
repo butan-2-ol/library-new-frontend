@@ -308,8 +308,67 @@ hr {
 /* ==========================================================================
    11. Log Visit Action Button
    ========================================================================== */
+  
+  /* Apply a flex layout container directly to the table cell holding the buttons */
+#search-results-table td:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Aligns them side-by-side starting from the left */
+    gap: 8px;                    /* Puts a clean 8px gap between the buttons */
+    white-space: nowrap;         /* Stops text from breaking onto two lines */
+}
+
+.log-visit-btn, 
+.deactivate-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+    outline: none;
+    margin: 0;                   /* Resets old margins that caused stacking issues */
+    height: 32px;                /* Forces both buttons to be the exact same height */
+}
+
+/* Log Visit Base & Hover (Blue) */
 .log-visit-btn {
-    background-color: #2563eb; /* Clean blue interactive primary color */
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.log-visit-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.log-visit-btn:active {
+    transform: scale(0.97);
+}
+
+/* Deactivate Base & Hover (Red/Destructive Outline) */
+.deactivate-btn {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.deactivate-btn:hover {
+    background-color: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.15);
+}
+
+.deactivate-btn:active {
+    transform: scale(0.97);
+}
+   /*
+.log-visit-btn {
+    background-color: #2563eb; /* Clean blue interactive primary color 
     color: #ffffff;
     font-size: 13px;
     font-weight: 600;
@@ -322,28 +381,28 @@ hr {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Hover effect */
+/* Hover effect 
 .log-visit-btn:hover {
-    background-color: #1d4ed8; /* Deepens seamlessly on hover */
+    background-color: #1d4ed8; /* Deepens seamlessly on hover 
 }
 
-/* Click state physics response */
+/* Click state physics response 
 .log-visit-btn:active {
     transform: scale(0.96);
 }
 
 /* Focus indicator for keyboard accessibility */
-.log-visit-btn:focus {
+/*.log-visit-btn:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
 /* Optional alignment balancing for table columns holding actions */
-#search-results-table td:last-child {
+/*#search-results-table td:last-child {
     text-align: right; /* Keeps buttons cleanly aligned to the right edge of rows */
-    padding-right: 20px;
+  /*  padding-right: 20px;
 }
-
+*/
 .logout-section {
     display: flex;
     align-items: center;
@@ -545,7 +604,7 @@ hr {
             <button type="button" id="search-button">Fetch Records</button>
         </p>
         
-        <table border="1" id="search-results-table">
+        <table  id="search-results-table">
             <thead>
                 <tr>
                     <th>Registration ID</th>
