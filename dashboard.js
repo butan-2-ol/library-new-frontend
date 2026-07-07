@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
 
                     // Dynamically condition button injection for students and staff options only
-                    const deactivateBtn = (type === 'staff') 
+                    const deactivateBtn = (type === 'students' || type === 'staff') 
                         ? `<button class="deactivate-btn" data-id="${regId}" data-type="${type}">Deactivate</button>` 
                         : '';
 
