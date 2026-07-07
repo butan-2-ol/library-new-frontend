@@ -1,4 +1,5 @@
-const isProduction = true; // keep false for now, switch when deploying
+const isProduction = true;
+const isElectron = navigator.userAgent.includes('Electron');
 
 const CONFIG = {
     API_URL: isProduction 
@@ -7,9 +8,11 @@ const CONFIG = {
     SOCKET_URL: isProduction
         ? "https://library-new-backend.onrender.com"
         : "http://localhost:5002",
-    MODEL_URL: isProduction 
-        ? "/models" 
-        : "/library_2_frontend_face/models"
+    MODEL_URL: isElectron
+        ? "app-resources://models"
+        : isProduction
+            ? "/models"
+            : "/library_2_frontend_face/models"
 };
 
 window.CONFIG = CONFIG;

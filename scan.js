@@ -21,33 +21,43 @@ document.addEventListener("DOMContentLoaded", function() {
      * CORE INITIALIZATION ORCHESTRATOR
      */
     async function initKioskGate() {
-        try {
-            // Bind the button interactive state switch listeners
-            setupToggleNavigation();
+    try {
+        // Bind the button interactive state switch listeners
+        setupToggleNavigation();
 
-            // 1. Initialize and Load Facial Recognition Models
-            faceStatusText.textContent = "Loading biometric formulas...";
-            await faceapi.nets.tinyFaceDetector.loadFromUri(window.CONFIG.MODEL_URL);
-            await faceapi.nets.faceLandmark68Net.loadFromUri(window.CONFIG.MODEL_URL);
-            await faceapi.nets.faceRecognitionNet.loadFromUri(window.CONFIG.MODEL_URL);
-
-            // 2. Sync Database Profiles
-            faceStatusText.textContent = "Synchronizing database face matrices...";
-            await loadRegisteredFaceTemplates();
-
-            // 3. Boot directly into the Primary Mode: Facial Recognition
-            if (faceMatcher) {
-                startFaceCameraStream();
-            } else {
-                faceStatusText.textContent = "No face profiles active in system.";
-            }
-
-        } catch (error) {
-            console.error("Initialization breakdown:", error);
-            faceStatusText.textContent = "Failed to launch biometrics suite.";
-            faceStatusText.style.color = "#dc2626";
+        // 1. Initialize and Load Facial Recognition Models
+        faceStatusText.textContent = "Loading biometric formulas...";
+        
+        // Force path formatting to guarantee it targets our custom scheme
+        let modelBaseUrl = window.CONFIG.MODEL_URL;
+        if (!modelBaseUrl.startsWith('app-resources://') && !modelBaseUrl.startsWith('http')) {
+            modelBaseUrl = 'app-resources://models';
         }
+
+        console.log("Requesting models from protocol base:", modelBaseUrl);
+
+        // UPDATED: Using direct load methods to protect the protocol string structure
+        await faceapi.loadTinyFaceDetectorModel(modelBaseUrl);
+        await faceapi.loadFaceLandmarkModel(modelBaseUrl);
+        await faceapi.loadFaceRecognitionModel(modelBaseUrl);
+
+        // 2. Sync Database Profiles
+        faceStatusText.textContent = "Synchronizing database face matrices...";
+        await loadRegisteredFaceTemplates();
+
+        // 3. Boot directly into the Primary Mode: Facial Recognition
+        if (faceMatcher) {
+            startFaceCameraStream();
+        } else {
+            faceStatusText.textContent = "No face profiles active in system.";
+        }
+
+    } catch (error) {
+        console.error("Initialization breakdown:", error);
+        faceStatusText.textContent = "Failed to launch biometrics suite.";
+        faceStatusText.style.color = "#dc2626";
     }
+}
 
     /**
      * TOGGLE STATE NAVIGATION HANDLER

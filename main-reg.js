@@ -1,13 +1,17 @@
-const { app, BrowserWindow, protocol, globalShortcut } = require('electron');
+const { app, BrowserWindow, protocol, globalShortcut, net } = require('electron');
 const path = require('path');
+const { pathToFileURL } = require('url'); // Native utility to prevent Windows path corruption
 
+// 1. Register the custom scheme with strict security privileges
 protocol.registerSchemesAsPrivileged([
     { 
         scheme: 'app-resources', 
         privileges: { 
             secure: true, 
             standard: true, 
-            supportFetchAPI: true 
+            supportFetchAPI: true,
+            corsEnabled: true,
+            bypassCSP: true 
         } 
     }
 ]);
@@ -25,6 +29,7 @@ function createWindow() {
     mainWindow.setMenu(null);
     mainWindow.loadFile(path.join(__dirname, 'scan.html'));
 
+    // Handle kiosk hotkeys safely when window is focused
     mainWindow.on('focus', () => {
         // DevTools
         globalShortcut.register('Ctrl+Shift+I', () => {
@@ -54,11 +59,25 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-    protocol.registerFileProtocol('app-resources', (request, callback) => {
-        const url = request.url.replace('app-resources://', '');
-        const basePath = app.isPackaged ? process.resourcesPath : __dirname;
-        const decodedPath = decodeURIComponent(url);
-        callback({ path: path.join(basePath, decodedPath) });
+    // 2. Bulletproof Local File Protocol Handler using pathToFileURL
+    protocol.handle('app-resources', (request) => {
+        try {
+            // Strip out custom scheme prefix and any trailing cache query strings (?v=1.0)
+            const cleanUrlPath = request.url.replace('app-resources://', '').split('?')[0];
+            const decodedPath = decodeURIComponent(cleanUrlPath);
+            
+            // Map the resource directory depending on whether running in dev or packaged production
+            const basePath = app.isPackaged ? process.resourcesPath : __dirname;
+            const finalFilePath = path.resolve(path.join(basePath, decodedPath));
+
+            // Convert raw file path (e.g., C:\...) directly to a flawless file:/// URL string
+            const safeFileUrl = pathToFileURL(finalFilePath).href;
+            
+            return net.fetch(safeFileUrl);
+        } catch (error) {
+            console.error('Custom Protocol Resolution Error:', error);
+            return new Response('File not found', { status: 404 });
+        }
     });
 
     createWindow();
