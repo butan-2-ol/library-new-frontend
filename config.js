@@ -1,4 +1,4 @@
-const isProduction = true;
+const isProduction = false;
 const isElectron = navigator.userAgent.includes('Electron');
 
 const CONFIG = {
@@ -12,7 +12,7 @@ const CONFIG = {
         ? "app-resources://models"
         : isProduction
             ? "/models"
-            : "/library_2_frontend_face/models"
+            : "/library_new_frontend/models"
 };
 
 window.CONFIG = CONFIG;

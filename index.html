@@ -6,9 +6,6 @@
     <title>Registration Form</title>
 </head>
 <style>
-    /* ==========================================================================
-   1. Core Reset & Global Styles
-   ========================================================================== */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -26,13 +23,10 @@ body {
     align-items: center;
 }
 
-/* ==========================================================================
-   2. Main Layout Container
-   ========================================================================== */
 body > h2,
 body > p,
 form,
-#qr-section {
+#progress-bar {
     width: 100%;
     max-width: 520px;
     background: #ffffff;
@@ -57,6 +51,9 @@ body > p {
 form {
     padding-top: 20px;
     padding-bottom: 20px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 hr {
@@ -68,9 +65,6 @@ hr {
     padding: 0 30px;
 }
 
-/* ==========================================================================
-   3. Form Elements & Typography
-   ========================================================================== */
 p {
     margin-bottom: 20px;
 }
@@ -114,10 +108,10 @@ select {
     padding-right: 40px;
 }
 
-/* ==========================================================================
-   4. Buttons & Actions
-   ========================================================================== */
-button[type="submit"] {
+button[type="submit"],
+.stage-nav button,
+#confirm-submit-btn,
+#register-another-btn {
     width: 100%;
     padding: 14px;
     font-size: 16px;
@@ -131,16 +125,34 @@ button[type="submit"] {
     margin-top: 25px;
 }
 
-button[type="submit"]:hover {
+button[type="submit"]:hover,
+.stage-nav button:hover,
+#confirm-submit-btn:hover,
+#register-another-btn:hover {
     background-color: #1d4ed8;
 }
 
-button[type="submit"]:active {
-    transform: scale(0.98);
+button:disabled {
+    background-color: #cbd5e1 !important;
+    cursor: not-allowed;
 }
 
-/* Camera Action Utilities */
-#face-capture-section button {
+.stage-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.stage-nav .btn-back {
+    background-color: #f1f5f9;
+    color: #334155;
+}
+
+.stage-nav .btn-back:hover {
+    background-color: #e2e8f0;
+}
+
+#face-capture-section button,
+#id-capture-section button {
     padding: 10px 18px;
     font-size: 14px;
     font-weight: 600;
@@ -154,24 +166,24 @@ button[type="submit"]:active {
     margin-top: 8px;
 }
 
-#face-capture-section button:hover {
+#face-capture-section button:hover,
+#id-capture-section button:hover {
     background-color: #f1f5f9;
     border-color: #94a3b8;
 }
 
-#face-capture-section button#capture-face-btn {
+#face-capture-section button#capture-face-btn,
+#id-capture-section button#capture-id-btn {
     background-color: #059669;
     color: #ffffff;
     border: none;
 }
 
-#face-capture-section button#capture-face-btn:hover {
+#face-capture-section button#capture-face-btn:hover,
+#id-capture-section button#capture-id-btn:hover {
     background-color: #047857;
 }
 
-/* ==========================================================================
-   5. Dynamic Field Structure (JavaScript Controlled)
-   ========================================================================== */
 div[id^="field-"] {
     display: block;
 }
@@ -180,28 +192,19 @@ div[id^="field-"] p {
     margin-bottom: 20px;
 }
 
-/* ==========================================================================
-   6. QR Code Section Layout
-   ========================================================================== */
-#qr-section {
-    padding-top: 25px;
-    padding-bottom: 35px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+#qr-result {
+    padding-top: 10px;
     text-align: center;
 }
 
-#qr-section h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #718096;
+#qr-result h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #059669;
     margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-#qr-section img {
+#qr-result img {
     display: inline-block;
     max-width: 180px;
     width: 100%;
@@ -211,6 +214,13 @@ div[id^="field-"] p {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 10px;
+}
+
+#qr-result p {
+    font-family: monospace;
+    font-size: 14px;
+    color: #64748b;
 }
 
 .kiosk-header {
@@ -241,7 +251,8 @@ div[id^="field-"] p {
     transform: translateX(-2px);
 }
 
-#face-capture-section {
+#face-capture-section,
+#id-capture-section {
     margin-top: 25px;
     padding: 20px;
     background-color: #f8fafc;
@@ -250,7 +261,8 @@ div[id^="field-"] p {
     text-align: center;
 }
 
-#face-capture-section h3 {
+#face-capture-section h3,
+#id-capture-section h3 {
     font-size: 15px;
     color: #475569;
     margin-bottom: 12px;
@@ -264,23 +276,151 @@ div[id^="field-"] p {
     margin: 0 auto 10px auto;
 }
 
-#face-status {
+#face-status,
+#id-status {
     font-size: 13px;
     font-weight: 600;
     color: #64748b;
     margin-top: 10px;
 }
 
+#face-status.warn,
+#id-status.warn {
+    color: #b45309;
+}
 
+#face-status.error,
+#id-status.error {
+    color: #c92a2a;
+}
+
+#face-status.success,
+#id-status.success {
+    color: #2b8a3e;
+}
+
+#id-capture-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+#id-video {
+    width: 100%;
+    border-radius: 6px;
+    background-color: #000;
+    display: block;
+}
+
+#id-guide-frame {
+    position: absolute;
+    top: 145%;
+    left: 5%;
+    width: 90%;
+    height: 71%;
+    border: 3px dashed rgba(255, 255, 255, 0.85);
+    border-radius: 10px;
+    pointer-events: none;
+    box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);
+}
+
+#id-guide-hint {
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #fff;
+    font-size: 12px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+#progress-bar {
+    padding: 20px 30px 0 30px;
+    display: flex;
+    justify-content: space-between;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.progress-step {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.progress-step.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.progress-step.done {
+    color: #059669;
+    border-bottom-color: #059669;
+}
+
+.stage {
+    display: none;
+}
+
+.stage.active {
+    display: block;
+}
+
+.field-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+
+.field-row.matched {
+    color: #059669;
+}
+
+.field-row.mismatch label {
+    display: block;
+    font-weight: 400;
+    margin: 6px 0 0 20px;
+    font-size: 13px;
+    color: #334155;
+}
+
+.processing {
+    text-align: center;
+    color: #64748b;
+    padding: 30px 0;
+}
+
+.notice-box {
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 13px;
+    color: #92400e;
+    margin-bottom: 15px;
+}
 </style>
 <body>
 
-        <!-- back button -->
-        <div class="kiosk-header">
-            <a href="scan.html">← Back to Scanner</a>
-        </div>
+    <div class="kiosk-header">
+        <a href="scan.html">← Back to Scanner</a>
+    </div>
 
     <h2>Registration Form</h2>
+
+    <div id="progress-bar">
+        <div class="progress-step active" id="progress-step-1">1. Your Details</div>
+        <div class="progress-step" id="progress-step-2">2. Capture</div>
+        <div class="progress-step" id="progress-step-3">3. Confirm</div>
+    </div>
 
     <p>
         <label for="visitor-type">Choose Category:</label>
@@ -292,111 +432,150 @@ div[id^="field-"] p {
         </select>
     </p>
 
-    <hr>
-
     <form action="#" method="POST">
-             
-        <div id="field-user-id">
+
+        <!-- ================= STAGE 1: BIO DATA ================= -->
+        <div id="stage-1" class="stage active">
+
+            <div id="field-user-id">
+                <p>
+                    <label for="user-id">ID:</label>
+                    <input type="text" id="user-id" name="user_id">
+                </p>
+            </div>
+
             <p>
-                <label for="user-id">ID:</label>
-                <input type="text" id="user-id" name="user_id">
+                <label for="user-name">Full Name:</label>
+                <input type="text" id="user-name" name="user_name">
             </p>
-        </div>
 
-        <p>
-            <label for="user-name">Full Name:</label>
-            <input type="text" id="user-name" name="user_name">
-        </p>
+            <div id="field-user-dept">
+                <p>
+                    <label for="user-dept">Department:</label>
+                    <select id="user-dept" name="user_dept">
+                        <option value="">-- Select Department --</option>
+                        <option value="Information Technology Education">Information Technology Education</option>
+                        <option value="Mathematics Education">Mathematics Education</option>
+                        <option value="Accounting Studies">Accounting Studies</option>
+                        <option value="Management Studies">Management Studies</option>
+                        <option value="Construction Technology and Management Education">Construction Technology and Management Education</option>
+                        <option value="Wood Science and Technology Education">Wood Science and Technology Education</option>
+                        <option value="Architecture and Civil Engineering">Architecture and Civil Engineering</option>
+                        <option value="Automotive & Mechnical Technology Education">Automotive &amp; Mechnical Technology Education</option>
+                        <option value="Electrical & Electronics Technology Education">Electrical &amp; Electronics Technology Education</option>
+                        <option value="Catering & Hospitality Education">Catering &amp; Hospitality Education</option>
+                        <option value="Fashion & Textiles Design Education">Fashion &amp; Textiles Design Education</option>
+                        <option value="Languages Education">Languages Education</option>
+                        <option value="Interdisciplinary Studies">Interdisciplinary Studies</option>
+                    </select>
+                </p>
+            </div>
 
-        <div id="field-user-dept">
+            <div id="field-user-level">
+                <p>
+                    <label for="user-level">Level:</label>
+                    <select id="user-level" name="user_level">
+                        <option value="">-- Select Level --</option>
+                        <option value="100">Level 100</option>
+                        <option value="200">Level 200</option>
+                        <option value="300">Level 300</option>
+                        <option value="400">Level 400</option>
+                    </select>
+                </p>
+            </div>
+
+            <div id="field-staff-status">
+                <p>
+                    <label for="staff-status">Staff Status:</label>
+                    <select id="staff-status" name="staff_status">
+                        <option value="">-- Select Status --</option>
+                        <option value="teaching">Teaching</option>
+                        <option value="non-teaching">Non-Teaching</option>
+                    </select>
+                </p>
+            </div>
+
+            <div id="field-user-gender">
+                <p>
+                    <label for="user-gender">Gender:</label>
+                    <select id="user-gender" name="user_gender">
+                        <option value="">-- Select Gender --</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                </p>
+            </div>
+
             <p>
-                <label for="user-dept">Department:</label>
-                <input type="text" id="user-dept" name="user_dept">
+                <label for="user-phone">Phone Number:</label>
+                <input type="tel" id="user-phone" name="user_phone">
             </p>
+
+            <div id="field-user-email">
+                <p>
+                    <label for="user-email">Email Address:</label>
+                    <input type="email" id="user-email" name="user_email">
+                </p>
+            </div>
+
+            <div id="consent-notice">
+                <p>
+                    <input type="checkbox" id="consent-checkbox" required>
+                    <label for="consent-checkbox">
+                        By registering, I consent to the collection and processing of my personal
+                        and biometric data for the purpose of library access management, in accordance
+                        with Ghana's Data Protection Act, 2012 (Act 843).
+                    </label>
+                </p>
+            </div>
+
+            <div class="stage-nav">
+                <button type="button" id="stage1-next">Continue</button>
+            </div>
         </div>
 
-        <!-- NEW FIELD: Level select dropdown option wrapper -->
-        <div id="field-user-level">
-            <p>
-                <label for="user-level">Level:</label>
-                <select id="user-level" name="user_level">
-                    <option value="">-- Select Level --</option>
-                    <option value="100">Level 100</option>
-                    <option value="200">Level 200</option>
-                    <option value="300">Level 300</option>
-                    <option value="400">Level 400</option>
-                </select>
-            </p>
+        <!-- ================= STAGE 2: ID PHOTO + FACE CAPTURE ================= -->
+        <div id="stage-2" class="stage">
+
+            <!-- ID card capture — hidden entirely for guests (no institutional ID) -->
+            <div id="id-capture-section">
+                <h3>ID Card Photo</h3>
+                <div id="id-capture-wrapper">
+                    <video id="id-video" autoplay playsinline muted></video>
+                    <div id="id-guide-frame"></div>
+                    <div id="id-guide-hint">Fit your ID card inside the frame, flat and well-lit</div>
+                </div>
+                <canvas id="id-canvas" style="display:none;"></canvas>
+                <button type="button" id="start-id-camera-btn">Start Camera</button>
+                <button type="button" id="capture-id-btn" style="display:none;">Capture ID</button>
+                <button type="button" id="retake-id-btn" style="display:none;">Retake</button>
+                <p id="id-status">No ID photo captured yet.</p>
+            </div>
+
+            <div id="face-capture-section">
+                <h3>Biometric Enrollment</h3>
+                <video id="face-video" width="300" height="200" autoplay muted></video>
+                <canvas id="face-canvas" width="300" height="200" style="display:none;"></canvas>
+
+                <button type="button" id="start-camera-btn">Start Camera</button>
+                <button type="button" id="capture-face-btn" style="display:none;">Capture Face</button>
+                <p id="face-status">No face captured yet.</p>
+            </div>
+
+            <div class="stage-nav">
+                <button type="button" class="btn-back" id="stage2-back">Back</button>
+                <button type="button" id="stage2-next" disabled>Continue</button>
+            </div>
         </div>
 
-        <div id="field-staff-status">
-            <p>
-                <label for="staff-status">Staff Status:</label>
-                <select id="staff-status" name="staff_status">
-                    <option value="">-- Select Status --</option>
-                    <option value="teaching">Teaching</option>
-                    <option value="non-teaching">Non-Teaching</option>
-                </select>
-            </p>
+        <!-- ================= STAGE 3: CONFIRM & SUBMIT ================= -->
+        <div id="stage-3" class="stage">
+            <div id="stage3-container">
+                <!-- populated by register.js -->
+            </div>
         </div>
-
-        <div id="field-user-gender">
-            <p>
-                <label for="user-gender">Gender:</label>
-                <select id="user-gender" name="user_gender">
-                    <option value="">-- Select Gender --</option>
-                    <option value="M">Male</option>
-                    <option value="F">Female</option>
-                </select>
-            </p>
-        </div>
-
-        <p>
-            <label for="user-phone">Phone Number:</label>
-            <input type="tel" id="user-phone" name="user_phone">
-        </p>
-
-        <div id="field-user-email">
-            <p>
-                <label for="user-email">Email Address:</label>
-                <input type="email" id="user-email" name="user_email">
-            </p>
-        </div>
-
-        <!-- Moved: Face Capture Section now sits sequentially before submission actions -->
-        <div id="face-capture-section">
-            <h3>Biometric Enrollment</h3>
-            <video id="face-video" width="300" height="200" autoplay muted></video>
-            <canvas id="face-canvas" width="300" height="200" style="display:none;"></canvas>
-            
-            <button type="button" id="start-camera-btn">Start Camera</button>
-            <button type="button" id="capture-face-btn" style="display:none;">Capture Face</button>
-            <p id="face-status">No face captured yet.</p>
-        </div>
-
-        <div id="consent-notice">
-            <p>
-                <input type="checkbox" id="consent-checkbox" required>
-                <label for="consent-checkbox">
-                    By registering, I consent to the collection and processing of my personal 
-                    and biometric data for the purpose of library access management, in accordance 
-                    with Ghana's Data Protection Act, 2012 (Act 843).
-                </label>
-            </p>
-        </div>
-
-        <!-- The submission button comes last -->
-        <p>
-            <button type="submit">Register Account</button>
-        </p>
 
     </form>
-
-    <hr>
-
-    <div id="qr-section">
-        <h3>QR Code Section</h3>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="config.js"></script>
