@@ -163,6 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (!res.ok) throw new Error("Approve failed");
             loadFlagged();
+            refreshBadge();
         } catch (err) {
             console.error("Approve error:", err);
             alert("Couldn't approve this registration. Try again.");
@@ -189,6 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (!res.ok) throw new Error("Resolve failed");
             loadFlagged();
+            refreshBadge();
         } catch (err) {
             console.error("Resolve error:", err);
             alert("Couldn't save the correction. Try again.");
@@ -211,6 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (!res.ok) throw new Error("Reject failed");
             loadFlagged();
+            refreshBadge();
         } catch (err) {
             console.error("Reject error:", err);
             alert("Couldn't reject this registration. Try again.");
@@ -230,4 +233,31 @@ document.addEventListener("DOMContentLoaded", function () {
     if (sectionEl.style.display !== "none") {
         loadFlagged();
     }
+
+    // ---- Badge: always kept up to date regardless of whether the
+    // section is open, so staff notice a new flag without clicking in. ----
+    const badgeEl = document.getElementById("pending-review-badge");
+
+    async function refreshBadge() {
+        if (!badgeEl) return;
+        try {
+            const res = await fetch(window.CONFIG.API_URL + "/review/flagged", {
+                headers: authHeaders(),
+            });
+            if (res.status === 401) return; // don't force-redirect from a background poll
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.count > 0) {
+                badgeEl.textContent = data.count;
+                badgeEl.style.display = "inline-block";
+            } else {
+                badgeEl.style.display = "none";
+            }
+        } catch (err) {
+            // Silent — a failed background poll shouldn't interrupt anything.
+        }
+    }
+
+    refreshBadge();
+    setInterval(refreshBadge, 30000); // check every 30s
 });
