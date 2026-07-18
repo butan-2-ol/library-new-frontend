@@ -90,6 +90,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     resolveFlagged(item.visitor_type, item.registration_id, nameInput.value.trim(), idInput.value.trim());
                 });
             }
+
+            const rejectBtn = document.getElementById("reject-" + cardId);
+            if (rejectBtn) {
+                rejectBtn.addEventListener("click", function () {
+                    const confirmed = confirm(
+                        "Reject and permanently remove " + item.name + "'s registration (" + item.registration_id + ")?\n\n" +
+                        "This deletes the record entirely, including their face data. They'd need to register again from scratch."
+                    );
+                    if (confirmed) rejectFlagged(item.visitor_type, item.registration_id);
+                });
+            }
         });
     }
 
@@ -125,6 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
             '<div class="actions">' +
             '<button class="btn-approve" id="approve-' + cardId + '">Approve As-Is</button>' +
             '<button class="btn-edit" id="edit-' + cardId + '">Correct Details</button>' +
+            '<button class="btn-reject" id="reject-' + cardId + '">Reject</button>' +
             "</div>" +
             '<div class="edit-fields" id="edit-fields-' + cardId + '">' +
             '<input type="text" id="input-name-' + cardId + '" placeholder="Correct name" value="' + escapeAttr(item.name) + '">' +
@@ -180,6 +192,28 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (err) {
             console.error("Resolve error:", err);
             alert("Couldn't save the correction. Try again.");
+        }
+    }
+
+    async function rejectFlagged(visitorType, registrationId) {
+        try {
+            const res = await fetch(
+                window.CONFIG.API_URL + "/review/" + visitorType + "/" + registrationId + "/reject",
+                {
+                    method: "DELETE",
+                    headers: authHeaders(),
+                    body: JSON.stringify({ reviewed_by: "librarian" }),
+                }
+            );
+            if (res.status === 401) {
+                window.location.href = "login.html";
+                return;
+            }
+            if (!res.ok) throw new Error("Reject failed");
+            loadFlagged();
+        } catch (err) {
+            console.error("Reject error:", err);
+            alert("Couldn't reject this registration. Try again.");
         }
     }
 
