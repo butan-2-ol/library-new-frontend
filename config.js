@@ -1,18 +1,5 @@
 const isElectron = navigator.userAgent.includes('Electron');
 
-const CONFIG = {
-    API_URL: "/api",
-    SOCKET_URL: window.location.origin,
-    MODEL_URL: isElectron
-        ? "app-resources://models"
-        : "/models"
-};
-
-window.CONFIG = CONFIG;
-
-
-const isElectron = navigator.userAgent.includes('Electron');
-
 // 1. Detect if we are running locally in a web browser (like Live Server)
 const isLocalBrowser = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 
