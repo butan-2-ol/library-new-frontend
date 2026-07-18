@@ -11,9 +11,10 @@ const CONFIG = {
     API_URL: isElectron 
         ? "/api" 
         : isLocalBrowser 
-            ? "http://localhost:5002/api"  // <-- Replace 3000 with your local Node port if different
-            : "https://library-new-backend.onrender.com", // <-- Your production Vercel backend URL
-
+            ? "http://localhost:5002/api"  // 
+            
+            : "https://library-new-backend.onrender.com/api", // 
+            
     SOCKET_URL: isElectron
         ? window.location.origin
         : isLocalBrowser
