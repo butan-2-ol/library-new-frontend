@@ -17,10 +17,10 @@ document.addEventListener("DOMContentLoaded", function() {
     let faceDetectionIntervalId = null;
     let videoStreamReference = null; // Remembers current video stream tracks so they can be explicitly shut off
 
-    /**
-     * CORE INITIALIZATION ORCHESTRATOR
-     */
-    async function initKioskGate() {
+  /**
+ * CORE INITIALIZATION ORCHESTRATOR
+ */
+async function initKioskGate() {
     try {
         // Bind the button interactive state switch listeners
         setupToggleNavigation();
@@ -28,15 +28,12 @@ document.addEventListener("DOMContentLoaded", function() {
         // 1. Initialize and Load Facial Recognition Models
         faceStatusText.textContent = "Loading biometric formulas...";
         
-        // Force path formatting to guarantee it targets our custom scheme
+        // Trust window.CONFIG.MODEL_URL directly without forcing the app-resources override
         let modelBaseUrl = window.CONFIG.MODEL_URL;
-        if (!modelBaseUrl.startsWith('app-resources://') && !modelBaseUrl.startsWith('http')) {
-            modelBaseUrl = 'app-resources://models';
-        }
 
         console.log("Requesting models from protocol base:", modelBaseUrl);
 
-        // UPDATED: Using direct load methods to protect the protocol string structure
+        // Using direct load methods to protect the protocol string structure
         await faceapi.loadTinyFaceDetectorModel(modelBaseUrl);
         await faceapi.loadFaceLandmarkModel(modelBaseUrl);
         await faceapi.loadFaceRecognitionModel(modelBaseUrl);
@@ -58,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function() {
         faceStatusText.style.color = "#dc2626";
     }
 }
+
 
     /**
      * TOGGLE STATE NAVIGATION HANDLER
