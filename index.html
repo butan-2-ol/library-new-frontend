@@ -312,7 +312,7 @@ div[id^="field-"] p {
     background-color: #000;
     display: block;
 }
-
+/*
 #id-guide-frame {
     position: absolute;
     top: 145%;
@@ -324,7 +324,7 @@ div[id^="field-"] p {
     pointer-events: none;
     box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);
 }
-
+*/
 #id-guide-hint {
     position: absolute;
     bottom: 6px;
@@ -447,6 +447,7 @@ div[id^="field-"] p {
             <p>
                 <label for="user-name">Full Name:</label>
                 <input type="text" id="user-name" name="user_name">
+                <small style="color:#64748b; font-size:12px;">Enter your name exactly as it appears on your ID card</small>
             </p>
 
             <div id="field-user-dept">
@@ -540,14 +541,11 @@ div[id^="field-"] p {
             <!-- ID card capture — hidden entirely for guests (no institutional ID) -->
             <div id="id-capture-section">
                 <h3>ID Card Photo</h3>
-                <div id="id-capture-wrapper">
-                    <video id="id-video" autoplay playsinline muted></video>
-                    <div id="id-guide-frame"></div>
-                    <div id="id-guide-hint">Fit your ID card inside the frame, flat and well-lit</div>
-                </div>
-                <canvas id="id-canvas" style="display:none;"></canvas>
-                <button type="button" id="start-id-camera-btn">Start Camera</button>
-                <button type="button" id="capture-id-btn" style="display:none;">Capture ID</button>
+                <p style="font-size:13px; color:#64748b; margin-bottom:10px;">
+                    Take a clear, well-lit photo of your ID card, filling as much of the frame as possible.
+                </p>
+                <input type="file" id="id-file-input" accept="image/*" capture="environment" style="display:none;">
+                <button type="button" id="take-id-photo-btn">Take Photo of ID</button>
                 <button type="button" id="retake-id-btn" style="display:none;">Retake</button>
                 <p id="id-status">No ID photo captured yet.</p>
             </div>

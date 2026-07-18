@@ -138,6 +138,20 @@ hr {
     padding: 12px 16px;
     border-bottom: 2px solid #edf2f7;
 }
+.review-card { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:16px; margin-bottom:14px; }
+.review-card h4 { font-size:15px; margin-bottom:10px; color:#92400e; }
+.review-card .compare-row { display:flex; gap:20px; font-size:13px; margin-bottom:6px; }
+.review-card .compare-row .label { font-weight:600; color:#4a5568; width:90px; flex-shrink:0; }
+.review-card .duplicate-note { background:#fee2e2; border:1px solid #fecaca; color:#991b1b; padding:8px 10px; border-radius:6px; font-size:12px; margin:10px 0; }
+.review-card .actions { display:flex; gap:8px; margin-top:12px; }
+.review-card button { padding:8px 14px; font-size:13px; font-weight:600; border-radius:6px; cursor:pointer; border:none; }
+.review-card .btn-approve { background:#059669; color:white; }
+.review-card .btn-edit { background:#2563eb; color:white; }
+.review-card .edit-fields { display:none; margin-top:10px; padding-top:10px; border-top:1px solid #fde68a; }
+.review-card .edit-fields input { padding:6px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; margin-right:8px; width:160px; }
+.review-card .btn-save { background:#1d4ed8; color:white; }
+.no-flagged { color:#64748b; font-size:14px; padding:20px 0; text-align:center; }
+
 
 #visitor-table td {
     padding: 14px 16px;
@@ -556,6 +570,7 @@ hr {
             <button type="button" id="logout-btn">Log Out</button>
             <button class="button" id="export-btn">Export CSV</button>
             <button type="button" id="deactivate-completed-btn">Deactivate Completed Students</button>
+            <button type="button" id="pending-review-btn">Pending Review</button>
         </div>
     </div>
     
@@ -620,6 +635,15 @@ hr {
 
     <hr>
 
+    <div id="pending-review-section" style="display:none; width:100%; max-width:1000px; background:#ffffff; border-radius:8px; padding:24px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); margin-bottom:32px;">
+        <h3 style="font-size:14px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:16px;">
+            Pending Review <span id="pending-review-count" style="color:#b45309;"></span>
+        </h3>
+        <div id="pending-review-list"></div>
+    </div>
+
+    <hr>
+
     <div id="feed-section">
         <h3>Real-Time Incoming Visitors</h3>
         <table border="1" id="visitor-table">
@@ -644,6 +668,7 @@ hr {
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="config.js"></script>
     <script src="dashboard.js"></script>
+    <script src="pendingReview.js"></script>
 
 </body>
 </html>

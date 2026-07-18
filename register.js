@@ -34,12 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ---- ID capture elements ----
     let capturedIdBlob = null;
-    let idStream = null;
-    const startIdBtn = document.getElementById("start-id-camera-btn");
-    const captureIdBtn = document.getElementById("capture-id-btn");
     const retakeIdBtn = document.getElementById("retake-id-btn");
-    const idVideo = document.getElementById("id-video");
-    const idCanvas = document.getElementById("id-canvas");
     const idStatus = document.getElementById("id-status");
 
     // ---- ID verification state (the retry-then-flag logic) ----
@@ -157,7 +152,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     stage2NextBtn.addEventListener("click", function () {
         stopFaceCamera();
-        stopIdCamera();
         goToStage(3);
         renderStage3();
     });
@@ -172,143 +166,92 @@ document.addEventListener("DOMContentLoaded", function () {
     // =====================================================================
     // ID CARD CAPTURE + RETRY-THEN-FLAG VERIFICATION (Stage 2)
     // =====================================================================
-    startIdBtn.addEventListener("click", async function () {
-        try {
-            setIdStatus("Starting camera...", "");
-            idStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 960 } },
-            });
-            idVideo.srcObject = idStream;
-            await idVideo.play();
+    const takeIdPhotoBtn = document.getElementById("take-id-photo-btn");
+const idFileInput = document.getElementById("id-file-input");
 
-            startIdBtn.style.display = "none";
-            captureIdBtn.style.display = "inline-block";
-            setIdStatus("Fit your ID card in the frame, then capture.", "");
-        } catch (err) {
-            console.error("ID camera error:", err);
-            setIdStatus("Could not start camera.", "error");
-        }
-    });
+takeIdPhotoBtn.addEventListener("click", function () {
+    idFileInput.click();
+});
+function setIdStatus(text, cls) {
+    idStatus.textContent = text;
+    idStatus.className = cls || "";
+}
 
-    captureIdBtn.addEventListener("click", function () {
-        const vw = idVideo.videoWidth;
-        const vh = idVideo.videoHeight;
 
-        const guideW = vw * 0.90;
-        const guideH = vh * 0.71;
-        const guideX = (vw - guideW) / 2;
-        const guideY = (vh - guideH) / 2;
+idFileInput.addEventListener("change", async function () {
+    const file = idFileInput.files[0];
+    if (!file) return;
 
-        idCanvas.width = guideW;
-        idCanvas.height = guideH;
-        const ctx = idCanvas.getContext("2d");
-        ctx.drawImage(idVideo, guideX, guideY, guideW, guideH, 0, 0, guideW, guideH);
+    capturedIdBlob = file;
+    setIdStatus("Checking your ID…", "");
+    takeIdPhotoBtn.style.display = "none";
+    retakeIdBtn.style.display = "inline-block";
 
-        const quality = checkImageQuality(ctx, guideW, guideH);
-        if (!quality.ok) {
-            setIdStatus(quality.message, "error");
-            return;
-        }
+    await verifyIdPhoto(file);
+});
 
-        idCanvas.toBlob(
-            async function (blob) {
-                capturedIdBlob = blob;
-                stopIdCamera();
-                await verifyIdPhoto(blob);
-            },
-            "image/jpeg",
-            0.92
-        );
-    });
+retakeIdBtn.addEventListener("click", function () {
+    idFileInput.value = ""; // clear so selecting the same photo again still fires 'change'
+    takeIdPhotoBtn.style.display = "inline-block";
+    retakeIdBtn.style.display = "none";
+    idFileInput.click();
+});
 
-    retakeIdBtn.addEventListener("click", async function () {
-        retakeIdBtn.style.display = "none";
-        startIdBtn.style.display = "inline-block";
-        startIdBtn.click();
-    });
+async function verifyIdPhoto(blob) {
+    if (idVerificationStatus === "id_flagged") return;
+    setIdStatus("Checking your ID…", "");
 
-    async function verifyIdPhoto(blob) {
-        setIdStatus("Checking your ID…", "");
+    const nameVal = document.getElementById("user-name").value.trim();
+    const idVal = document.getElementById("user-id").value.trim();
 
-        const nameVal = document.getElementById("user-name").value.trim();
-        const idVal = document.getElementById("user-id").value.trim();
+    try {
+        const body = new FormData();
+        body.append("id_photo", blob, "id.jpg");
+        body.append("name", nameVal);
+        body.append("student_id", idVal);
 
-        try {
-            const body = new FormData();
-            body.append("id_photo", blob, "id.jpg");
-            body.append("name", nameVal);
-            body.append("student_id", idVal);
+        const res = await fetch(window.CONFIG.API_URL + "/ocr/verify", { method: "POST", body: body });
+        if (!res.ok) throw new Error("OCR verification request failed");
+        const result = await res.json();
+        lastOcrResult = result;
 
-            const res = await fetch(window.CONFIG.API_URL + "/ocr/verify", { method: "POST", body: body });
-            if (!res.ok) throw new Error("OCR verification request failed");
-            const result = await res.json();
-            lastOcrResult = result;
-
-            if (!result.requires_confirmation) {
-                idVerificationStatus = "matched";
-                setIdStatus("ID verified \u2713", "success");
-                retakeIdBtn.style.display = "none";
-            } else if (result.matches.id_number.match && !result.matches.name.match) {
-                idVerificationStatus = "name_mismatch";
-                setIdStatus("ID number verified. We'll confirm your name in the next step.", "success");
-                retakeIdBtn.style.display = "none";
-            } else {
-                idAttempts++;
-                idAttemptsLog.push(result.ocr_extracted.id_number || "(unreadable)");
-
-                if (idAttempts < MAX_ID_ATTEMPTS) {
-                    setIdStatus(
-                        "ID number didn't match (attempt " + idAttempts + " of " + MAX_ID_ATTEMPTS + ") \u2014 please retake your photo, flat and well-lit.",
-                        "warn"
-                    );
-                    retakeIdBtn.style.display = "inline-block";
-                    idVerificationStatus = null;
-                } else {
-                    idVerificationStatus = "id_flagged";
-                    setIdStatus(
-                        "We couldn't verify your ID after a few tries. You can continue \u2014 this will be reviewed by library staff.",
-                        "warn"
-                    );
-                    retakeIdBtn.style.display = "none";
-                }
-            }
-        } catch (err) {
-            console.error("OCR verify error:", err);
-            idVerificationStatus = "id_flagged";
-            setIdStatus("Couldn't process your ID photo. You can continue \u2014 this will be reviewed by staff.", "warn");
+        if (!result.requires_confirmation) {
+            idVerificationStatus = "matched";
+            setIdStatus("ID verified \u2713", "success");
             retakeIdBtn.style.display = "none";
-        }
+        } else if (result.matches.id_number.match && !result.matches.name.match) {
+            idVerificationStatus = "name_mismatch";
+            setIdStatus("ID number verified. We'll confirm your name in the next step.", "success");
+            retakeIdBtn.style.display = "none";
+        } else {
+            idAttempts++;
+            idAttemptsLog.push(result.ocr_extracted.id_number || "(unreadable)");
 
-        updateStage2ContinueState();
+            if (idAttempts < MAX_ID_ATTEMPTS) {
+                setIdStatus(
+                    "ID number didn't match (attempt " + idAttempts + " of " + MAX_ID_ATTEMPTS + ") \u2014 please retake your photo, flat and well-lit.",
+                    "warn"
+                );
+                retakeIdBtn.style.display = "inline-block";
+                idVerificationStatus = null;
+            } else {
+                idVerificationStatus = "id_flagged";
+                setIdStatus(
+                    "We couldn't verify your ID after a few tries. You can continue \u2014 this will be reviewed by library staff.",
+                    "warn"
+                );
+                retakeIdBtn.style.display = "none";
+            }
+        }
+    } catch (err) {
+        console.error("OCR verify error:", err);
+        idVerificationStatus = "id_flagged";
+        setIdStatus("Couldn't process your ID photo. You can continue \u2014 this will be reviewed by staff.", "warn");
+        retakeIdBtn.style.display = "none";
     }
 
-    function setIdStatus(text, cls) {
-        idStatus.textContent = text;
-        idStatus.className = cls || "";
-    }
-
-    function checkImageQuality(ctx, w, h) {
-        if (w < 400 || h < 250) {
-            return { ok: false, message: "Move closer \u2014 the card needs to fill the frame." };
-        }
-        const imageData = ctx.getImageData(0, 0, w, h).data;
-        let total = 0, count = 0;
-        for (let i = 0; i < imageData.length; i += 400) {
-            total += (imageData[i] + imageData[i + 1] + imageData[i + 2]) / 3;
-            count++;
-        }
-        const avgBrightness = total / count;
-        if (avgBrightness < 60) return { ok: false, message: "Too dark \u2014 find better lighting and retake." };
-        if (avgBrightness > 235) return { ok: false, message: "Glare on the card \u2014 tilt it slightly and retake." };
-        return { ok: true };
-    }
-
-    function stopIdCamera() {
-        if (idStream) {
-            idStream.getTracks().forEach((t) => t.stop());
-            idStream = null;
-        }
-    }
+    updateStage2ContinueState();
+}
 
     // =====================================================================
     // FACE CAPTURE + SILENT DUPLICATE CHECK (Stage 2)
@@ -450,6 +393,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function renderNameCorrection(formState) {
         const nameOcr = lastOcrResult.ocr_extracted.name;
+
+         // If OCR genuinely couldn't read a name, there's nothing meaningful
+            // to compare against — just keep what they typed rather than
+            // offering an empty/unreadable value as a selectable "choice."
+            if (!nameOcr) {
+                submitRegistration(formState, {
+                    verification_status: "flagged", // still logged for the audit trail
+                    ocr_match_confidence: lastOcrResult.overall_confidence,
+                    ocr_extracted_name: null,
+                    ocr_extracted_id: lastOcrResult.ocr_extracted.id_number,
+                });
+                return;
+            }
+
+
         stage3Container.innerHTML =
             '<h3>Quick check \u2014 which name is correct?</h3>' +
             '<div class="field-row matched"><strong>ID Number:</strong> ' + escapeHtml(formState.id) + ' \u2713</div>' +
@@ -594,30 +552,30 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function resetEverything() {
-        registrationForm.reset();
+   function resetEverything() {
+    registrationForm.reset();
 
-        storedFaceDescriptor = null;
-        duplicateFaceFlag = false;
-        capturedIdBlob = null;
-        idAttempts = 0;
-        idAttemptsLog = [];
-        idVerificationStatus = null;
-        lastOcrResult = null;
+    storedFaceDescriptor = null;
+    duplicateFaceFlag = false;
+    capturedIdBlob = null;
+    idAttempts = 0;
+    idAttemptsLog = [];
+    idVerificationStatus = null;
+    lastOcrResult = null;
 
-        faceStatus.textContent = "No face captured yet.";
-        faceStatus.className = "";
-        captureBtn.style.display = "none";
-        startBtn.disabled = false;
+    faceStatus.textContent = "No face captured yet.";
+    faceStatus.className = "";
+    captureBtn.style.display = "none";
+    startBtn.disabled = false;
 
-        setIdStatus("No ID photo captured yet.", "");
-        captureIdBtn.style.display = "none";
-        retakeIdBtn.style.display = "none";
-        startIdBtn.style.display = "inline-block";
+    setIdStatus("No ID photo captured yet.", "");
+    idFileInput.value = "";
+    retakeIdBtn.style.display = "none";
+    takeIdPhotoBtn.style.display = "inline-block";
 
-        updateFormVisibility();
-        goToStage(1);
-    }
+    updateFormVisibility();
+    goToStage(1);
+}
 
     function escapeHtml(str) {
         const div = document.createElement("div");
