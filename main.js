@@ -1,4 +1,4 @@
-const { app, BrowserWindow, globalShortcut } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -12,34 +12,29 @@ function createWindow() {
         }
     });
 
+    // Hide the top File/Edit/View menu bar
+    mainWindow.setMenu(null);
+
     mainWindow.loadFile('login.html');
 
-    // Handle developer and shortcut keys cleanly on window focus
-    mainWindow.on('focus', () => {
-        globalShortcut.register('Ctrl+Shift+I', () => {
-            mainWindow.webContents.toggleDevTools();
-        });
-        globalShortcut.register('F12', () => {
-            mainWindow.webContents.toggleDevTools();
-        });
-        globalShortcut.register('F5', () => {
-            mainWindow.webContents.reload();
-        });
-        globalShortcut.register('Ctrl+R', () => {
-            mainWindow.webContents.reload();
-        });
-        globalShortcut.register('F11', () => {
-            mainWindow.setFullScreen(!mainWindow.isFullScreen());
-        });
-    });
+    // Enable Refresh (F5 / Ctrl+R) and DevTools (F12 / Ctrl+Shift+I)
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        const isControl = input.control || input.meta;
 
-    // Unregister shortcuts when app loses focus
-    mainWindow.on('blur', () => {
-        globalShortcut.unregisterAll();
+        // F12 or Ctrl+Shift+I -> Toggle DevTools
+        if (input.key === 'F12' || (isControl && input.shift && input.key.toLowerCase() === 'i')) {
+            mainWindow.webContents.toggleDevTools();
+            event.preventDefault();
+        }
+
+        // F5 or Ctrl+R -> Refresh
+        if (input.key === 'F5' || (isControl && input.key.toLowerCase() === 'r')) {
+            mainWindow.webContents.reload();
+            event.preventDefault();
+        }
     });
 
     // --- ADMIN EXPORT OPTIMIZATION ---
-    // Automatically routes frontend CSV download blobs to the user's local Downloads directory
     mainWindow.webContents.session.on('will-download', (event, item) => {
         const fileName = item.getFilename();
         const savePath = path.join(app.getPath('downloads'), fileName);
@@ -69,10 +64,6 @@ app.whenReady().then(() => {
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
-});
-
-app.on('will-quit', () => {
-    globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {
