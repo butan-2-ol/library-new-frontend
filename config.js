@@ -2,27 +2,24 @@
 const isElectron = navigator.userAgent.includes('Electron');
 const isLocalBrowser = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 
-// 2. Automatically resolve host domain:
-// If running in local browser OR Electron dev mode -> localhost
-// Otherwise (Vercel, deployed domain) -> Render backend
 const PRODUCTION_BACKEND = "https://library-new-backend.onrender.com";
 const LOCAL_BACKEND = "http://localhost:5002";
 
-const BASE_HTTP = isLocalBrowser ? LOCAL_BACKEND : PRODUCTION_BACKEND;
+// 2. TOGGLE THIS FLAG:
+// Set to 'true' while running locally.
+// Set to 'false' before building your final executable for distribution.
+const IS_DEV = true;
 
-// 3. Unified Configuration
+// 3. Resolve host domain
+const BASE_HTTP = (isLocalBrowser || (isElectron && IS_DEV)) 
+    ? LOCAL_BACKEND 
+    : PRODUCTION_BACKEND;
+
+// 4. Unified Configuration
 const CONFIG = {
-    API_URL: isElectron 
-        ? `${BASE_HTTP}/api`
-        : (isLocalBrowser ? `${LOCAL_BACKEND}/api` : `${PRODUCTION_BACKEND}/api`),
-
-    SOCKET_URL: isElectron 
-        ? BASE_HTTP 
-        : (isLocalBrowser ? LOCAL_BACKEND : PRODUCTION_BACKEND),
-
-    MODEL_URL: isElectron 
-        ? "app-resources://models" 
-        : "/models"
+    API_URL: `${BASE_HTTP}/api`,
+    SOCKET_URL: BASE_HTTP,
+    MODEL_URL: isElectron ? "app-resources://models" : "/models"
 };
 
 window.CONFIG = CONFIG;
