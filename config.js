@@ -1,25 +1,24 @@
-// 1. Environment Detection
+// 1. Detect runtime environment automatically
 const isElectron = navigator.userAgent.includes('Electron');
 const isLocalBrowser = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 
-// 2. Set to 'true' while developing on your machine; set to 'false' before packaging the production .exe
-const IS_DEV = true;
+// 2. Automatically resolve host domain:
+// If running in local browser OR Electron dev mode -> localhost
+// Otherwise (Vercel, deployed domain) -> Render backend
+const PRODUCTION_BACKEND = "https://library-new-backend.onrender.com";
+const LOCAL_BACKEND = "http://localhost:5002";
 
-// 3. Resolve the Base HTTP Domain
-const BASE_HTTP = IS_DEV 
-    ? "http://localhost:5002" 
-    : "https://library-new-backend.onrender.com";
+const BASE_HTTP = isLocalBrowser ? LOCAL_BACKEND : PRODUCTION_BACKEND;
 
-// 4. Unified Configuration
+// 3. Unified Configuration
 const CONFIG = {
-    // Electron MUST use absolute URLs (http/https). Browsers on Vercel can use relative or absolute.
     API_URL: isElectron 
         ? `${BASE_HTTP}/api`
-        : (isLocalBrowser ? "http://localhost:5002/api" : `${BASE_HTTP}/api`),
+        : (isLocalBrowser ? `${LOCAL_BACKEND}/api` : `${PRODUCTION_BACKEND}/api`),
 
     SOCKET_URL: isElectron 
         ? BASE_HTTP 
-        : (isLocalBrowser ? "http://localhost:5002" : BASE_HTTP),
+        : (isLocalBrowser ? LOCAL_BACKEND : PRODUCTION_BACKEND),
 
     MODEL_URL: isElectron 
         ? "app-resources://models" 
