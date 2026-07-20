@@ -5,21 +5,39 @@ function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
+        minWidth: 900,
+        minHeight: 600,
+        title: "LibPass Admin",
+        
+        // --- MODERN UI INFUSION ---
+        titleBarStyle: 'hidden',
+        titleBarOverlay: {
+            color: '#0f172a',       // Dark background matching modern dashboard themes
+            symbolColor: '#f8fafc', // Crisp white minimize/maximize/close icons
+            height: 35
+        },
+        backgroundMaterial: 'mica', // Adds Windows 11 Fluent dark backdrop blur
+        
+        show: false, // Prevents white flash on launch; shown via ready-to-show
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true
         }
     });
 
-    // Remove the default window menu bar for a clean dashboard presentation
+    // Remove default OS menu bar
     mainWindow.setMenu(null);
     
-    // Admin app initiates from the authentication gateway
+    // Admin app initiates from authentication gateway
     mainWindow.loadFile(path.join(__dirname, 'login.html'));
+
+    // Reveal window smoothly when contents are loaded
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+    });
 
     // Handle standard developer and kiosk navigation shortcuts cleanly
     mainWindow.on('focus', () => {
-        // DevTools
         globalShortcut.register('Ctrl+Shift+I', () => {
             mainWindow.webContents.toggleDevTools();
         });
@@ -27,7 +45,6 @@ function createWindow() {
             mainWindow.webContents.toggleDevTools();
         });
 
-        // Refresh
         globalShortcut.register('F5', () => {
             mainWindow.webContents.reload();
         });
@@ -35,7 +52,6 @@ function createWindow() {
             mainWindow.webContents.reload();
         });
 
-        // Fullscreen
         globalShortcut.register('F11', () => {
             mainWindow.setFullScreen(!mainWindow.isFullScreen());
         });
@@ -51,7 +67,6 @@ function createWindow() {
     mainWindow.webContents.session.on('will-download', (event, item, webContents) => {
         const totalBytes = item.getTotalBytes();
         
-        // Let Electron determine the filename dynamically from the frontend blob configuration
         const fileName = item.getFilename();
         const savePath = path.join(app.getPath('downloads'), fileName);
         

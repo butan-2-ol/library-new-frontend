@@ -1,28 +1,28 @@
+// 1. Environment Detection
 const isElectron = navigator.userAgent.includes('Electron');
-
-// 1. Detect if we are running locally in a web browser (like Live Server)
 const isLocalBrowser = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 
-const CONFIG = {
-    // 2. Route dynamically: 
-    // If Electron/Vercel Monorepo -> use relative path
-    // If Live Server -> point explicitly to your local Node server port (e.g., 3000)
-    // Otherwise -> point to your production hosted backend URL
-    API_URL: isElectron 
-        ? "/api" 
-        : isLocalBrowser 
-            ? "http://localhost:5002/api"  // 
-            
-            : "https://library-new-backend.onrender.com/api", // 
-            
-    SOCKET_URL: isElectron
-        ? window.location.origin
-        : isLocalBrowser
-            ? "http://localhost:5002"
-            : "https://library-new-backend.onrender.com",
+// 2. Set to 'true' while developing on your machine; set to 'false' before packaging the production .exe
+const IS_DEV = true;
 
-    MODEL_URL: isElectron
-        ? "app-resources://models"
+// 3. Resolve the Base HTTP Domain
+const BASE_HTTP = IS_DEV 
+    ? "http://localhost:5002" 
+    : "https://library-new-backend.onrender.com";
+
+// 4. Unified Configuration
+const CONFIG = {
+    // Electron MUST use absolute URLs (http/https). Browsers on Vercel can use relative or absolute.
+    API_URL: isElectron 
+        ? `${BASE_HTTP}/api`
+        : (isLocalBrowser ? "http://localhost:5002/api" : `${BASE_HTTP}/api`),
+
+    SOCKET_URL: isElectron 
+        ? BASE_HTTP 
+        : (isLocalBrowser ? "http://localhost:5002" : BASE_HTTP),
+
+    MODEL_URL: isElectron 
+        ? "app-resources://models" 
         : "/models"
 };
 
